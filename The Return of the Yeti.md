@@ -3,7 +3,7 @@
 
 >Christmas 2023 is already just around the corner. The Bandit Yeti has been sleeping for most of the year to prepare to hack back into the Best Festival Company. Should he have used that time to plan his attack? Probably. But Yetis need a lot of energy, so don't judge!
 
-This room was included as one of the sidequests for the TryHackMe Advent of Cyber 2023.  We are given a network capture file; `VanSpy.pcapng` and tasked with answering the following questions:
+This room was included as one of the sidequests for the TryHackMe Advent of Cyber 2023.  We are given [a network capture file; `VanSpy.pcapng`](assets/VanSpy.pcapng) and tasked with answering the following questions:
 
 >What's the name of the WiFi network in the PCAP?
 >
