@@ -258,14 +258,25 @@ python3 -m pipx ensurepath
 pipx install pyrdp-mitm[full]
 ```
 
-Before passing on the pcap file to PyRDP we need to extract the decrypted RDP session PDUs.  This can easily be done in Wireshark by going to **File** > **Export PDUs to File** then selecting **OSI layer 7** in the dropdown menu and clicking on **OK**.  Wireshark will now only show us the PDUs related to the RDP session as a new capture file and we can **File** > **Save As** to save it as a new PCAP file; in our case `RDP_PDUs.pcap` (Remember to select the *Wireshark /tcpdump/...-pcap* format when saving).
+Before passing on the pcap file to PyRDP we need to extract the decrypted RDP session PDUs.  This can easily be done in Wireshark by going to **File** > **Export PDUs to File** then selecting **OSI layer 7** in the dropdown menu, entering `rdp` as the *Display filter*  and clicking on **OK**.  Wireshark will now only show us the PDUs related to the RDP session as a new capture file and we can **File** > **Save As** to save it as a new PCAP file; in our case `RDP_PDUs.pcap` (Remember to select the *Wireshark /tcpdump/...-pcap* format when saving).
 
 Now we can use PyRDP's 'convertor' tool to convert our PCAP file to a format that the PyRDP player can parse as a video.
 ```
-pyrdp-convert --src 10.0.0.2 -o RDP_PDUs.pyrdp RDP_PDUs.pcap
+# pyrdp-convert RDP_PDUs.pcap              
+
+[*] Analyzing PCAP 'RDP_PDUs.pcap' ...
+    - 10.0.0.2:55510 -> 10.1.1.1:3389 : plaintext
+[*] Processing 10.0.0.2:55510 -> 10.1.1.1:3389
+100% (7386 of 7386) |################################################################################################################################################################################| Elapsed Time: 0:00:02 Time:  0:00:02
+
+[+] Successfully wrote '20231125145052_10.0.0.2:55510-10.1.1.1:3389.pyrdp'
+                                                                             
 ```
 
 ...and finally we can look at the generated video:
 ```
-pyrdp-player RDP_PDUs.pyrdp
+pyrdp-player 20231125145052_10.0.0.2:55510-10.1.1.1:3389.pyrdp 
+[2024-01-13 13:57:02,759] - INFO - pyrdp.player - Listening for connections on 127.0.0.1:3000
 ```
+![VirtualBox_Kali-Linux-2021 4-virtualbox-amd64_13_12_2023_18_26_32](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/191bfb65-b9c8-485b-a256-68bb9a8d8b92)
+
