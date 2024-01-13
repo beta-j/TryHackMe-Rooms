@@ -5,6 +5,8 @@
 
 This room was included as one of the sidequests for the TryHackMe Advent of Cyber 2023.  We are given [a network capture file; `VanSpy.pcapng`](assets/VanSpy.pcapng) and tasked with answering the following questions:
 
+**NOTE :** All answers to the questions are redacted in this document.  If you'd like to know the answers simply got to the [TryHackMe Room](https://tryhackme.com/room/adv3nt0fdbopsjcap) and follow the steps - it's free 😄
+
 >What's the name of the WiFi network in the PCAP?
 >
 >What's the password to access the WiFi network?
@@ -31,7 +33,7 @@ Read 45243 packets.
 
    #  BSSID              ESSID                     Encryption
 
-   1  22:C7:12:C7:E2:35  FreeWifiBFC               WPA (1 handshake)
+   1  22:C7:12:C7:E2:35  F*********C               WPA (1 handshake)
 
 Choosing first network as target.
 
@@ -44,7 +46,7 @@ Read 45243 packets.
 Please specify a dictionary (option -w).
 ```
 
-That's great - from just one (very short) command we already have the answer to teh first question.  The name of the WiFi network is **`FreeWifiBFC`**.
+That's great - from just one (very short) command we already have the answer to teh first question.  The name of the WiFi network is **`F*********C`**.
 
 #  
 
@@ -63,7 +65,7 @@ After just a couple of seconds Aircrack-NG has retrieved the WiFi password for u
 
       Time left: 2 hours, 18 minutes, 8 seconds                  0.22%
 
-                           KEY FOUND! [ Christmas ]
+                           KEY FOUND! [ C******** ]
 
 
       Master Key     : C4 BB 8C DA 66 C3 72 E6 C2 86 14 84 6E 2B 03 EC 
@@ -77,5 +79,14 @@ After just a couple of seconds Aircrack-NG has retrieved the WiFi password for u
       EAPOL HMAC     : AA CD A8 56 3F 4B AC 08 C8 B1 B8 74 0B 52 2E 6C 
 ```
 
-So to answer the second question, the WiFi password is **`Christmas`**
+So to answer the second question, the WiFi password is **`C********`**
+
+#  
+### Part 3 - Decrypting WiFi Traffic ###
+
+Now that we have a WiFi password we're going to need to decrypt the WiFi traffic in the network capture to be able to continue our investigation further.  To do this in Wireshark go to **Edit** > **Preferences** > **Protocols** > **IEEE 802.11** and click on the **Edit** button next to *Decryption Keys*.  Click on the `+` sign at the bottom left corner and select *Key type* : `wpa-pwd` and enter the password in the format `password:SSID`.  So in our case this will be `C********:F*********C`. Then click on **OK**.
+
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/42718960-4238-4466-af1d-6f92b2586ba8)
+
+
 
