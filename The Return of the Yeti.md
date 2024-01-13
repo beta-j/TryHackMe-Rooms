@@ -1,4 +1,7 @@
-![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/feb6c337-fb11-4c4b-89f0-0f7bda5ba66a)# The Return of the Yeti #
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/c582b9e1-5136-431b-a37e-cee91c8acd8d)
+
+
+# The Return of the Yeti #
 ## The Yeti needs a plan for 2023. Help him out! ##
 
 >Christmas 2023 is already just around the corner. The Bandit Yeti has been sleeping for most of the year to prepare to hack back into the Best Festival Company. Should he have used that time to plan his attack? Probably. But Yetis need a lot of energy, so don't judge!
