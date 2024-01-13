@@ -260,5 +260,12 @@ pipx install pyrdp-mitm[full]
 
 Before passing on the pcap file to PyRDP we need to extract the decrypted RDP session PDUs.  This can easily be done in Wireshark by going to **File** > **Export PDUs to File** then selecting **OSI layer 7** in the dropdown menu and clicking on **OK**.  Wireshark will now only show us the PDUs related to the RDP session as a new capture file and we can **File** > **Save As** to save it as a new PCAP file; in our case `RDP_PDUs.pcap` (Remember to select the *Wireshark /tcpdump/...-pcap* format when saving).
 
+Now we can use PyRDP's 'convertor' tool to convert our PCAP file to a format that the PyRDP player can parse as a video.
+```
+pyrdp-convert --src 10.0.0.2 -o RDP_PDUs.pyrdp RDP_PDUs.pcap
+```
 
-
+...and finally we can look at the generated video:
+```
+pyrdp-player RDP_PDUs.pyrdp
+```
