@@ -228,4 +228,8 @@ The suspicious tool that the attacker used to extract a juicy file from the serv
 
 ### Part 4 - Decrypting and Replaying a RDP Session ###
 
+From the Powershell output we just got to examine, we can see that the attacker retrieved a pfx certificate file and converted the contents *to* base64.  We can simply copy the cleartext output of this operation and convert it back *from* base64 to recreate the pfx file.  An easy way of doing this is to use [Cyberchef](https://gchq.github.io/CyberChef/) with the **From Base64** Recipe element.  Just paste the copied base64 string in the **Input** box and then click on the *Save* icon on the Output box to save the resulting output to a pfx file - which we are going to call `certificate.pfx`.
 
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/7d273931-4096-4fb7-bbb1-44f421ddae88)
+
+Now we can use this certificate file ro decrypt the RDP traffic in Wireshark similarly to what we did to decrypt the WiFi traffic in [Part 3](#Part 3 - Decrypting and Analysing WiFi Traffic)
