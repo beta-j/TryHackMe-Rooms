@@ -245,15 +245,17 @@ git clone https://github.com/GoSecure/pyrdp
 
 Then follow the installation instructions to get all teh necessary dep[endancies installed:
 ```
-apt install python3 python3-pip python3-venv build-essential python3-dev openssl libnotify-bin libavcodec60 libavdevice60 libegl1 libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-keysyms1
-apt install pipx --fix-missing 
+apt install pipx python3 python3-pip python3-venv build-essential python3-dev openssl libnotify-bin libavcodec60 libavdevice60 libegl1 libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-keysyms1
 ```
 ```
 python3 -m pip install --user pipx
 python3 -m pipx ensurepath
-
+```
+```
+pipx install pyrdp-mitm[full]
 ```
 
+Before passing on the pcap file to PyRDP we need to extract the decrypted RDP session PDUs.  This can easily be done in Wireshark by going to **File** > **Export PDUs to File** then selecting **OSI layer 7** in the dropdown menu and clicking on **OK**.  Wireshark will now only show us the PDUs related to the RDP session as a new capture file and we can **File** > **Save As** to save it as a new PCAP file; in our case `RDP_PDUs.pcap` (Remember to select the *Wireshark /tcpdump/...-pcap* format when saving).
 
 
 
