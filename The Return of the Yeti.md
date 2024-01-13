@@ -1,4 +1,4 @@
-# The Return of the Yeti #
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/feb6c337-fb11-4c4b-89f0-0f7bda5ba66a)# The Return of the Yeti #
 ## The Yeti needs a plan for 2023. Help him out! ##
 
 >Christmas 2023 is already just around the corner. The Bandit Yeti has been sleeping for most of the year to prepare to hack back into the Best Festival Company. Should he have used that time to plan his attack? Probably. But Yetis need a lot of energy, so don't judge!
@@ -232,4 +232,28 @@ From the Powershell output we just got to examine, we can see that the attacker 
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/7d273931-4096-4fb7-bbb1-44f421ddae88)
 
-Now we can use this certificate file ro decrypt the RDP traffic in Wireshark similarly to what we did to decrypt the WiFi traffic in [Part 3](#Part 3 - Decrypting and Analysing WiFi Traffic)
+Now we can use this certificate file ro decrypt the RDP traffic in Wireshark similarly to what we did to decrypt the WiFi traffic in [Part 3](##part-3---decrypting-and-analysing-wifi-traffic).  In Wireshark go to **Edit** > **Preferences** > **Protocols** > **TLS** and click on the **Edit** button next to *RSA keys list*.  For port enter `3389` which is the standard RDP port, for protocol enter `tpkt`, for the *Key File* browse to the `certificate.pfx` file we just created and for the *Password* enter `mimikatz` since this is the default password applied by Mimikatz when using it to extract certificates. 
+
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/39233703-eba9-43de-a0f4-b04563b4f491)
+
+Now for the most interesting part of this challenge.  After some hours of research on what to do next I cam across this ingenious project called [**PyRDP*](https://github.com/GoSecure/pyrdp) which will provide a video replay for a decrypted RDP session's capture which is exactly what we're after!
+
+So we can clone into the project's repo:
+```
+git clone https://github.com/GoSecure/pyrdp
+```
+
+Then follow the installation instructions to get all teh necessary dep[endancies installed:
+```
+apt install python3 python3-pip python3-venv build-essential python3-dev openssl libnotify-bin libavcodec60 libavdevice60 libegl1 libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-keysyms1
+apt install pipx --fix-missing 
+```
+```
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+
+```
+
+
+
+
