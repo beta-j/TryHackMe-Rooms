@@ -4,6 +4,15 @@
 ### https://tryhackme.com/room/adv3nt0fdbopsjcap ###
 
 #  
+
+### TL;DR ###
+-  Retrieve WiFi password from PCANG file using Aircrack-NG
+-  Decrypt Wifi Encrypted traffic in Wireshark
+-  Retrieve and recreate RDP certificate from decrypted TCP stream
+-  Use reconstructed RDP certificate to decrypt TLS traffic in Wireshark
+-  Use the decrypted RDP PDUs from Wireshark to create a **video-replay** of the RDP session using [PyRDP](https://github.com/GoSecure/pyrdp)
+#   
+
 >Christmas 2023 is already just around the corner. The Bandit Yeti has been sleeping for most of the year to prepare to hack back into the Best Festival Company. Should he have used that time to plan his attack? Probably. But Yetis need a lot of energy, so don't judge!
 
 This room was included as one of the sidequests for the TryHackMe Advent of Cyber 2023.  We are given [a network capture file; `VanSpy.pcapng`](assets/VanSpy.pcapng) and tasked with answering the following questions:
