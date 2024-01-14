@@ -4,8 +4,22 @@
 ### https://tryhackme.com/room/adv3nt0fdbopsjcap ###
 
 #  
+### CONTENTS : ###
+[TL;DR](#tldr)
 
-### TL;DR ###
+[PROCEDURE](#procedure-)
+
+-  [Part 1 - Retrieving the WiFi SSID](#part-1---retrieving-the-wifi-ssid)
+    
+-  [Part 2 - Retrieving the WiFi Password](#part-2---retrieving-the-wifi-password)
+    
+-  [Part 3 - Decrypting and Analysing WiFi Traffic](#part-3---decrypting-and-analysing-wifi-traffic)
+    
+-  [Part 4 - Decrypting and Replaying a RDP Session](#part-4---decrypting-and-replaying-a-rdp-session)
+
+
+
+### TL;DR : ###
 -  Retrieve WiFi password from PCANG file using Aircrack-NG
 -  Decrypt Wifi Encrypted traffic in Wireshark
 -  Retrieve and recreate RDP certificate from decrypted TCP stream
