@@ -78,7 +78,7 @@ That's great - from just one (very short) command we already have the answer to 
 
 ### Part 2 - Retrieving the WiFi Password ###
 
-Aircrack-NG also makes answering the next question quite simple for us.  Provided that our capture file contains a succesful WiFi handshake in it, we can use the same tool to brute-force and extract the WiFi password.  We'll need to specify a *wordlist* for this command (i.e. a list of words that the program will attempt to use as passwords).  The most propular wordlist to use for such attacks especially CTF challenges is [`rockyou.txt`](https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt) which includes some of the most commonly used passwords.
+Aircrack-NG also makes answering the next question quite simple for us.  Provided that our capture file contains a succesful WiFi handshake in it, we can use the same tool to brute-force and extract the WiFi password.  We'll need to specify a *wordlist* for this command (i.e. a list of words that the program will attempt to use as passwords).  The most popular wordlist to use for such attacks especially CTF challenges is [`rockyou.txt`](https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt) which includes some of the most commonly used passwords.
 ```
 $ aircrack-ng VanSpy.pcap -w /usr/share/wordlists/rockyou.txt
 ```
