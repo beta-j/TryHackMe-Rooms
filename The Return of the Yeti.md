@@ -246,7 +246,11 @@ So we can clone into the project's repo:
 git clone https://github.com/GoSecure/pyrdp
 ```
 
-Then follow the installation instructions to get all teh necessary dep[endancies installed:
+Then follow the installation instructions to get all teh necessary dependancies installed:
+```
+sudo apt install python3 python3-pip python3-venv build-essential python3-dev git openssl libgl1-mesa-glx libnotify-bin libxkbcommon-x11-0 libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-util1 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libavformat-dev libavcodec-dev libavdevice-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
+```
+
 ```
 apt install pipx python3 python3-pip python3-venv build-essential python3-dev openssl libnotify-bin libavcodec60 libavdevice60 libegl1 libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-keysyms1
 ```
