@@ -41,7 +41,7 @@ This room was included as one of the sidequests for the TryHackMe Advent of Cybe
 >
 >What is the case number assigned by the CyberPolice to the issues reported by McSkidy?
 >
->What is the content of the yetikey1.txt file?
+>What is the content of the `yetikey1.txt` file?
 
 
 ## PROCEDURE : ##
