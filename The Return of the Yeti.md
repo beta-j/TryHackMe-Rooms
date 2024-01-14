@@ -1,6 +1,6 @@
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/c582b9e1-5136-431b-a37e-cee91c8acd8d)
 
-# The Return of the Yeti #
+# The Return of the Yeti Writeup - Video Replay of Encrypted RDP Sessions #
 ### https://tryhackme.com/room/adv3nt0fdbopsjcap ###
 
 #  
