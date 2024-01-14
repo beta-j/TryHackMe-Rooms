@@ -72,7 +72,7 @@ Read 45243 packets.
 Please specify a dictionary (option -w).
 ```
 
-That's great - from just one (very short) command we already have the answer to teh first question.  The name of the WiFi network is **`FreeWifiBFC`**.
+That's great - from just one (very short) command we already have the answer to the first question.  The name of the WiFi network is **`FreeWifiBFC`**.
 
 #  
 
@@ -83,7 +83,7 @@ Aircrack-NG also makes answering the next question quite simple for us.  Provide
 $ aircrack-ng VanSpy.pcap -w /usr/share/wordlists/rockyou.txt
 ```
 
-After just a couple of seconds Aircrack-NG has retrieved the WiFi password for us:
+After just a couple of seconds Aircrack-NG has retrieved the WiFi password for us (Admittedly it was an easy password to crack):
 ```
                                Aircrack-ng 1.7 
 
@@ -119,11 +119,11 @@ We can confirm that this has worked because now we are also able to see other tr
 Let's have a closer look at the story that this network capture is telling us.  
 1.  **Packets `1` to `331`:** The first packets in the capture are WiFi beacon frames advertising the BSSID and negotiating the handshake (the one we cracked earlier).
 2.  **Packets `332` to `335`:** Once the attacker connected to the Wifi we see some ARP traffic as the ARP table is updated with the attacker's MAC and IP addresses.
-3.  **Packets `337` to `39981':** Then we immediately see a *Remote Desktop Protocol* (RDP) session as evidenced by the use of TCP Port 3389.  All of this traffic is encrypted over the RDP session (we'll have more fun with this later).
+3.  **Packets `337` to `39981`:** Then we immediately see a *Remote Desktop Protocol* (RDP) session as evidenced by the use of TCP Port 3389.  All of this traffic is encrypted over the RDP session (we'll have more fun with this later).
 4.  **Packets `39983` to `43952`:** Next we see a lot of traffic from the attacker's port `35827` to multiple different victim port numbers.  Most likely the attacker was performing a port scan here.
-5.  **Packets `44021` to `45192`:** Finally we see sustained traffic to/from Port `4444` 
+5.  **Packets `44021` to `45192`:** Finally we see sustained traffic to/from Port `4444`. 
 
-For those who are familiar with cybersecurity and pentesting tools, this rings some alarm bells as port `4444` is an easy-to-remember port number that is very commonly used when establishing reverse shells.  It is helpful to filter for this traffic in Wireshark by using the filter; ``tcp.port == 4444``. Now - ignoring the first thre packets in the resulting list (as these where part of the initial port scan and not the TCP conversation we're interested in), we can right-click on one fo the packets further down the list and select **Follow** > **TCP Stream**.  This gives us a nice cleartext view of what went on in this session:
+For those who are familiar with cybersecurity and pentesting tools, this rings some alarm bells as port `4444` is an easy-to-remember port number that is very commonly used when establishing reverse shells.  It is helpful to filter for this traffic in Wireshark by using the filter; ``tcp.port == 4444``. Now - ignoring the first three packets in the resulting list (as these were part of the initial port scan and not the TCP conversation we're interested in), we can right-click on one of the packets further down the list and select **Follow** > **TCP Stream**.  This gives us a nice cleartext view of what went on in this session:
 
 ```
 Windows PowerShell running as user Administrator on INTERN-PC
@@ -258,15 +258,15 @@ From the Powershell output we just got to examine, we can see that the attacker 
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/7d273931-4096-4fb7-bbb1-44f421ddae88)
 
-Now we can use this certificate file ro decrypt the RDP traffic in Wireshark similarly to what we did to decrypt the WiFi traffic in [Part 3](##part-3---decrypting-and-analysing-wifi-traffic).  In Wireshark go to **Edit** > **Preferences** > **Protocols** > **TLS** and click on the **Edit** button next to *RSA keys list*.  For port enter `3389` which is the standard RDP port, for protocol enter `tpkt`, for the *Key File* browse to the `certificate.pfx` file we just created and for the *Password* enter `mimikatz` since this is the default password applied by Mimikatz when using it to extract certificates. 
+Now we can use this certificate file ro decrypt the RDP traffic in Wireshark similarly to what we did to decrypt the WiFi traffic in [Part 3](#part-3---decrypting-and-analysing-wifi-traffic).  In Wireshark go to **Edit** > **Preferences** > **Protocols** > **TLS** and click on the **Edit** button next to *RSA keys list*.  For port enter `3389` which is the standard RDP port, for protocol enter `tpkt`, for the *Key File* browse to the `certificate.pfx` file we just created and for the *Password* enter `mimikatz` since this is the default password applied by Mimikatz when using it to extract certificates. 
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/39233703-eba9-43de-a0f4-b04563b4f491)
 
 Now for the most interesting part of this challenge...
 
-After some hours of research on what to do next I came across this ingenious project called [**PyRDP*](https://github.com/GoSecure/pyrdp) which will provide a video replay from a decrypted RDP session's capture - which is exactly what we're after!
+After some hours of research on what to do next I came across this ingenious project called [**PyRDP**](https://github.com/GoSecure/pyrdp) which will generate a video replay from a decrypted RDP session's network capture - which is exactly what we're after!
 
-So we can clone into the project's repo:
+To install PyRDP we can clone into the project's repo:
 ```
 git clone https://github.com/GoSecure/pyrdp
 ```
@@ -281,7 +281,7 @@ Reboot our machine:
 sudo reboot 0
 ```
 
-Install pyrdp in a virtual environment:
+Then install pyrdp in a virtual environment:
 ```
 cd pyrdp
 python3 -m venv venv
@@ -289,6 +289,8 @@ source venv/bin/activate
 pip3 install -U pip setuptools wheel
 pip3 install -U -e '.[full]'
 ```
+**NOTE:**  *I tried several different ways of installing and running PyRDP incuding a Docker install and using `pipx`, but I could only get it to work without issues with the method described above* 
+
 
 Before passing on the pcap file to PyRDP we need to extract the decrypted RDP session PDUs.  This can easily be done in Wireshark by going to **File** > **Export PDUs to File**, then selecting **OSI layer 7** in the dropdown menu and clicking on **OK**.  Wireshark will now only show us the PDUs related to the RDP session as a new capture file and we can **File** > **Save As** to save it as a new PCAP file; in our case `osil7extract.pcap` (Remember to select the *Wireshark /tcpdump/...-pcap* format when saving).
 
