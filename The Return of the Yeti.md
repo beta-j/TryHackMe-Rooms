@@ -23,7 +23,7 @@ This room was included as one of the sidequests for the TryHackMe Advent of Cybe
 
 ## PROCEDURE : ##
 
-We are given a file called [VanSpy.pcapng](assets/VanSpy.pcapng).  PCAPNG (a.k.a. "PCAP Next Generation", "pcap-ng" or ".pcapng") is a file format for network captures that has some improvements over the regular PCAP files we're accustomed to.  Luckily these files can still be handled by [Wireshark](https://www.wireshark.org/) and we can aslo use it [to convert from one fromat to the other]([url](https://www.netresec.com/?page=Blog&month=2012-12&post=HowTo-handle-PcapNG-files)https://www.netresec.com/?page=Blog&month=2012-12&post=HowTo-handle-PcapNG-files).  so we can go ahead and fire-up Wireshark and start examining the newtwork capture we've been given.
+We are given a file called [VanSpy.pcapng](assets/VanSpy.pcapng).  PCAPNG (a.k.a. "PCAP Next Generation", "pcap-ng" or ".pcapng") is a file format for network captures that has some improvements over the regular PCAP files we're accustomed to.  Luckily these files can still be handled by [Wireshark](https://www.wireshark.org/) and we can aslo use it [to convert from one fromat to the other]([url](https://www.netresec.com/?page=Blog&month=2012-12&post=HowTo-handle-PcapNG-files)https://www.netresec.com/?page=Blog&month=2012-12&post=HowTo-handle-PcapNG-files).  So we can go ahead and fire-up Wireshark and start examining the newtwork capture we've been given.
 
 ### Part 1 - Retrieving the WiFi SSID ###
 
