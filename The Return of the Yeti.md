@@ -1,14 +1,14 @@
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/c582b9e1-5136-431b-a37e-cee91c8acd8d)
 
-
 # The Return of the Yeti #
-## The Yeti needs a plan for 2023. Help him out! ##
+### https://tryhackme.com/room/adv3nt0fdbopsjcap ###
 
+#  
 >Christmas 2023 is already just around the corner. The Bandit Yeti has been sleeping for most of the year to prepare to hack back into the Best Festival Company. Should he have used that time to plan his attack? Probably. But Yetis need a lot of energy, so don't judge!
 
 This room was included as one of the sidequests for the TryHackMe Advent of Cyber 2023.  We are given [a network capture file; `VanSpy.pcapng`](assets/VanSpy.pcapng) and tasked with answering the following questions:
 
-**NOTE :** All answers to the questions are redacted in this document.  If you'd like to know the answers simply got to the [TryHackMe Room](https://tryhackme.com/room/adv3nt0fdbopsjcap) and follow the steps - it's free 😄
+**NOTE :** Passwords, hashes and flags are redacted in this document.  If you'd like to know the answers simply got to the [TryHackMe Room](https://tryhackme.com/room/adv3nt0fdbopsjcap) and follow the steps - it's free 😄
 
 >What's the name of the WiFi network in the PCAP?
 >
@@ -239,48 +239,73 @@ Now we can use this certificate file ro decrypt the RDP traffic in Wireshark sim
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/39233703-eba9-43de-a0f4-b04563b4f491)
 
-Now for the most interesting part of this challenge.  After some hours of research on what to do next I cam across this ingenious project called [**PyRDP*](https://github.com/GoSecure/pyrdp) which will provide a video replay for a decrypted RDP session's capture which is exactly what we're after!
+Now for the most interesting part of this challenge...
+
+After some hours of research on what to do next I came across this ingenious project called [**PyRDP*](https://github.com/GoSecure/pyrdp) which will provide a video replay from a decrypted RDP session's capture - which is exactly what we're after!
 
 So we can clone into the project's repo:
 ```
 git clone https://github.com/GoSecure/pyrdp
 ```
 
-Then follow the installation instructions to get all teh necessary dependancies installed:
+Then follow the [installation instructions](https://github.com/GoSecure/pyrdp/blob/main/docs/devel.adoc) to get all the necessary dependancies installed:
 ```
-sudo apt install python3 python3-pip python3-venv build-essential python3-dev git openssl libgl1-mesa-glx libnotify-bin libxkbcommon-x11-0 libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-util1 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libavformat-dev libavcodec-dev libavdevice-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
-```
-
-```
-apt install pipx python3 python3-pip python3-venv build-essential python3-dev openssl libnotify-bin libavcodec60 libavdevice60 libegl1 libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-keysyms1
-```
-```
-python3 -m pip install --user pipx
-python3 -m pipx ensurepath
-```
-```
-pipx install pyrdp-mitm[full]
+sudo apt install python3-pip python3-venv build-essential python3-dev git openssl libgl1-mesa-dev libnotify-bin libxkbcommon-x11-0 libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-util1 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libavformat-dev libavcodec-dev libavdevice-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
 ```
 
-Before passing on the pcap file to PyRDP we need to extract the decrypted RDP session PDUs.  This can easily be done in Wireshark by going to **File** > **Export PDUs to File** then selecting **OSI layer 7** in the dropdown menu, entering `rdp` as the *Display filter*  and clicking on **OK**.  Wireshark will now only show us the PDUs related to the RDP session as a new capture file and we can **File** > **Save As** to save it as a new PCAP file; in our case `RDP_PDUs.pcap` (Remember to select the *Wireshark /tcpdump/...-pcap* format when saving).
+Reboot our machine:
+```
+sudo reboot 0
+```
+
+Install pyrdp in a virtual environment:
+```
+cd pyrdp
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -U pip setuptools wheel
+pip3 install -U -e '.[full]'
+```
+
+Before passing on the pcap file to PyRDP we need to extract the decrypted RDP session PDUs.  This can easily be done in Wireshark by going to **File** > **Export PDUs to File**, then selecting **OSI layer 7** in the dropdown menu and clicking on **OK**.  Wireshark will now only show us the PDUs related to the RDP session as a new capture file and we can **File** > **Save As** to save it as a new PCAP file; in our case `osil7extract.pcap` (Remember to select the *Wireshark /tcpdump/...-pcap* format when saving).
 
 Now we can use PyRDP's 'convertor' tool to convert our PCAP file to a format that the PyRDP player can parse as a video.
 ```
-# pyrdp-convert RDP_PDUs.pcap              
-
-[*] Analyzing PCAP 'RDP_PDUs.pcap' ...
+# pyrdp-convert ../osil7extract.pcap                            
+[*] Analyzing PCAP '../osil7extract.pcap' ...
     - 10.0.0.2:55510 -> 10.1.1.1:3389 : plaintext
 [*] Processing 10.0.0.2:55510 -> 10.1.1.1:3389
-100% (7386 of 7386) |################################################################################################################################################################################| Elapsed Time: 0:00:02 Time:  0:00:02
+ 42% (3120 of 7405) |##########################################################################                                                                                                      | Elapsed Time: 0:00:01 ETA:   0:00:02
+[-] Failed to handle data, continuing anyway: unpack requires a buffer of 4 bytes
+ 71% (5326 of 7405) |##############################################################################################################################                                                  | Elapsed Time: 0:00:02 ETA:   0:00:01
+[-] Failed to handle data, continuing anyway: unpack requires a buffer of 4 bytes
+ 99% (7374 of 7405) |############################################################################################################################################################################### | Elapsed Time: 0:00:03 ETA:   0:00:00
+[-] Failed to handle data, continuing anyway: Trying to parse unknown MCS PDU type 12
+100% (7405 of 7405) |################################################################################################################################################################################| Elapsed Time: 0:00:03 Time:  0:00:03
 
 [+] Successfully wrote '20231125145052_10.0.0.2:55510-10.1.1.1:3389.pyrdp'
+
                                                                              
 ```
 
-...and finally we can look at the generated video:
+...and finally we can look at the generated _playback video and keylogs!_:
 ```
 pyrdp-player 20231125145052_10.0.0.2:55510-10.1.1.1:3389.pyrdp 
 [2024-01-13 13:57:02,759] - INFO - pyrdp.player - Listening for connections on 127.0.0.1:3000
 ```
-![VirtualBox_Kali-Linux-2021 4-virtualbox-amd64_13_12_2023_18_26_32](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/191bfb65-b9c8-485b-a256-68bb9a8d8b92)
+![Animation2](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/87d2435b-2a71-46d8-bf9d-2633c5e20580)
+
+Isn't that really cool?!  Sometimes we get so used to running and exploring everything trhough CLI that when you come across somethign as visual as that, it's really impressive.  Just ***imagine how impactful a video like that could be as part of a pentest report!***
+
+We're really close to completing this challenge now.  PyRDP provides us with more information than we could ever ask for - video playback, key-stroke logs and clipboard monitoring!  Just by looking through the video generated by PyRDP, we see that our attacker opened Google Chrome and accessed Gmail.  He logged in as `mcskidyelf@gmail.com` with the password `j!*********` and opened an email with the subject line **RE: Suspicious activity** recieved from **Cyber Police**.  In this email we see that the case number assigned is `31337-0`, which he copies to clipboard.  He then replies to the email saying that he will be sending them a copy of a *"weird file"* through a *"more secure channel"*.  He also copies this email to the clipboard - so it is most likely that we could have extracted this info from the capture if we were more patient (and wanted to settle for a much less cool result).
+
+At this point we have enough information to answer the fourth question.  The case number assigned by the CyberPolice to the issues reported by McSkidy is **`31337-0`**.
+
+Next he closes the Chrome browser, opens Powershell and navigates to the `DESKTOP` folder. He lists the contents of the `DESKTOP` folder and copies the filename for `yetikey1.txt`.  Then he appears to paste in a Powershell command he copied from an other terminal; ``Set-Clipboard-value(Get-Content .\Desktop\secret.txt.txt)`` and edits this to read ``Set-Clipboard-value(Get-Content .\Desktop\yetikey1.txt)`` and runs the command three times.  This updates the clipboard with the contents of `yetikey`.txt` - which we can conventiently see from teh clipboard monitoring in PyRDP player.
+
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/d055a3a6-37e4-4b4f-b88a-dd44ca40fa14)
+
+And this gives us the answer to the fifth and final question of this challenge; the content of `yetikey1.txt` is **`1-...<R E D A C T E D>...ef2834`**
+
+
 
