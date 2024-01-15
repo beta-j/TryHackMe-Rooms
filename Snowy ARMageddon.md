@@ -35,8 +35,8 @@ This leaves us with port `8080` and we can just open a browser and navigate to `
 
 This must be the **"internal-only web application"** that is our main target.  But as the name implies - it's only accessible from the internal network, so we need to figure out a way in first.
 
-Let's have a look at port `50628` next - maybe we can access it through the browser too?
+Let's have a look at port `50628` next - maybe we can access it through the browser too by ?
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTkzNTE1Nzc0NF19
+eyJoaXN0b3J5IjpbLTY5MTc0NzMzNSwxOTM1MTU3NzQ0XX0=
 -->
