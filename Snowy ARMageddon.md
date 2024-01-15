@@ -40,6 +40,20 @@ Let's have a look at port `50628` next - maybe we can access it through the brow
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/13c1fc4f-a870-44b9-80a0-f95748667583)
 
 
+```
+21      /* ADDR */
+22      mov r1, #0xEC       ; Move 0xEC into register r1 (0x0A * 256 + 0xEC = 10.10)
+23      lsl r1, #8          ; Left shift r1 by 8 bits
+24      add r1, #0x0A       ; Add 0x0A to r1 (0xEC0A = 10.10 in little-endian)
+25      lsl r1, #8          ; Left shift r1 by 8 bits
+26      add r1, #0x03       ; Add 0x03 to r1 (0x0AEC03 = 10.10.236.3 in little-endian)
+27      push {r1}           ; Push the value in r1 onto the stack (little-endian)
+```
+
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/dbffc18e-c759-424f-a818-9afc521d082f)
+
+
+
 
 <!--stackedit_data:
 eyJoaXN0b3J5IjpbLTExMzkyMzM1MiwtNDIyMzQ1OTI2LC0xMj
