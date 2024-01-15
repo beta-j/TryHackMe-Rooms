@@ -37,6 +37,9 @@ This must be the **"internal-only web application"** that is our main target.  B
 
 Let's have a look at port `50628` next - maybe we can access it through the browser too by navigating to `http://10.10.106.239:50628` ?  Yup, it brings up a login page for a **Trivision NC-227WF HD 720P** IP Network camera:
 
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/13c1fc4f-a870-44b9-80a0-f95748667583)
+
+
 <!--stackedit_data:
 eyJoaXN0b3J5IjpbLTEyMDYwNjc0MTRdfQ==
 -->
