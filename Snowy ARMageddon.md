@@ -53,7 +53,16 @@ Let's have a look at port `50628` next - maybe we can access it through the brow
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/dbffc18e-c759-424f-a818-9afc521d082f)
 
 
-
+```
+ mov r1, #0xdc
+ lsl r1, r1, #8
+ add r1, r1, #0x42
+ lsl r1, r1, #8
+ add r1, r1, #0x08
+ add r1, r1, #0x02
+ lsl r1, r1, #8
+ add r1, r1, #0x08
+```
 
 <!--stackedit_data:
 eyJoaXN0b3J5IjpbLTExMzkyMzM1MiwtNDIyMzQ1OTI2LC0xMj
