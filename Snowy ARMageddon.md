@@ -29,7 +29,9 @@ From the scan results we can see four open ports:
 
 Connecting via SSH is not possible and we get a `Permission denied (publickey)` error.   Attempting to connect via Telnet successfully establishes a connection which is immediately terminated by the host, and since we don't know anything about port `50628` so far, we're going to ignore it for the time being.
 
-This leaves us with port `8080` and we can just open a browser and navigate to `http://10.10.200.123:8080/` to bring up a website with an angry-looking elf telling us that:
+This leaves us with port `8080` and we can just open a browser and navigate to `http://10.10.200.123:8080/` to bring up a website with an angry-looking elf:
+
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/c385f64f-641c-4ecc-8a62-967f08084d7d)
 
 
 
