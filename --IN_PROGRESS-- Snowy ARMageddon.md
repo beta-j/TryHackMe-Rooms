@@ -54,14 +54,17 @@ Let's have a look at port `50628` next - maybe we can access it through the brow
 
 
 ```
- mov r1, #0xdc
- lsl r1, r1, #8
- add r1, r1, #0x42
- lsl r1, r1, #8
- add r1, r1, #0x08
- add r1, r1, #0x02
- lsl r1, r1, #8
- add r1, r1, #0x08
+ mov r1, #0xdc      <==== 220
+ lsl r1, #8         <==== shift 8 bits left           
+ add r1, #0x42      <=== 66
+ lsl r1, #8
+ add r1, #0x08      <=== 8 +
+ add r1, #0x02      <=== 2 = 10
+ lsl r1, #8
+ add r1, #0x08
+ add r1, #0x02
+push {r1}
+
 ```
 
 <!--stackedit_data:
