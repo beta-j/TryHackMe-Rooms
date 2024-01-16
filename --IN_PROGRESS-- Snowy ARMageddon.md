@@ -5,9 +5,13 @@ Victim IP: `10.10.106.239`
 Start with a `nmap` scan with the `-sS` switch and go have a coffee while it runs.
 The `-sS` switch asks `nmap` to perform a `SYN Stealth scan` which is a relatively stealthy (remember that stealth is important in this challenge) and quick scan.  A `SYN Stealth scan` never opens a full TCP connection and instead relies on sending  `SYN` packets and waiting for a `SYN/ACK` or `RST` responses.
 
+
+
 ```
 sudo nmap -sS -p1-65335 10.10.200.123
 ```
+**_NOTE:_** You may also use `rustscan -a 10.10.106.239` which yields MUCH quicker portscan results - but honestly I don't know how it compares to NMAP with -sS in terms of 'noisieness'.
+
 ```
 Starting Nmap 7.60 ( https://nmap.org ) at 2024-01-15 09:02 GMT
 Nmap scan report for ip-10-10-200-123.eu-west-1.compute.internal (10.10.200.123)
@@ -39,6 +43,8 @@ Let's have a look at port `50628` next - maybe we can access it through the brow
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/13c1fc4f-a870-44b9-80a0-f95748667583)
 
+Some Google searching for `Trivision NC-227WF Exploit` quickly leads us to the following article: [(https://no-sec.net/arm-x-challenge-breaking-the-webs/)](https://no-sec.net/arm-x-challenge-breaking-the-webs/) and just by looking at the title it is evident that we're dealing with an ARM processor architecture (and the `ARMageddon` in the challenge title is making more sense now).
+The article explains how a buffer overflow vulnerability in the Trivision camera firmware can be exploited to establish a reverse shell connection.  It conveniently also provides assembly code instructions and a python script to exploit this.
 
 ```
 21      /* ADDR */
