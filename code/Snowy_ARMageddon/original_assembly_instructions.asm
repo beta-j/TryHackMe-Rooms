@@ -1,3 +1,7 @@
+/* ###################################################################################### */
+/* ##  ORIGINAL EXPLOIT CODE COPIED FROM https://no-sec.net/arm-x-challenge-breaking-the-webs/ */
+/* #################################################################################### */
+
 .section .text
 .global _start  
 _start:
