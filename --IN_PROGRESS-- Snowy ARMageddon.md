@@ -160,6 +160,8 @@ Just by running the `modified_exploit.py` we get a reverse shell connection to t
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/c407311b-5deb-4533-95e3-7cc1a944a6ea)
 
+Now that we're in we can have a look at the contents of the root folder and we can notice that thee is a hidden folder called `.emux`.
+
 ```
 $ ls -la
 drwxr-xr-x   14 1000     1000          4096 Dec  4  2023 .
@@ -179,6 +181,7 @@ drwxr-xr-x    4 1000     1000          4096 Feb  6  2017 usr
 drwxr-xr-x   13 1000     1000          4096 Jan 16  2024 var
 ```
 
+Naturally we're drawn to the hidden folder first and looking inside that we can see a hidden file called `.nfs00000000000fa3a300000001`.
 ```
 $ cd .emux
 $ ls -la
@@ -187,6 +190,7 @@ drwxr-xr-x   14 1000     1000          4096 Dec  4  2023 ..
 -rwxr-xr-x    1 root     root           169 Jan 16  2024 .nfs00000000000fa3a300000001
 ```
 
+The contents of the hidden file appear to be a bash script updating the contents of `/var/etc/umconfig.txt' with a new admin password.
 ```
 $ cat .nfs00000000000fa3a300000001
 #!/bin/sh
@@ -198,13 +202,14 @@ sed -i 's/password=admin/password=Y3tiStarCur!ous&/' /var/etc/umconfig.txt
 /bin/sh
 ```
 
+Looking inside `umconfig.txt`, we see a lot of data, but at the very top we can see a username `admin` and a password that got a bit messed up due to a mistake in the bash script we just looked at which prepended (instead of replacing) the old password with the new one.
 ```
 $ cat /var/etc/umconfig.txt
 TABLE=users
 
 ROW=0
 name=admin
-password=Y3tiStarCur!ouspassword=admin
+password=Y3*******r!ouspassword=admin
 group=administrators
 prot=0
 disable=0
@@ -213,7 +218,7 @@ TABLE=groups
 
 ROW=0
 ...
-
+...
 
 ```
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/65a346a5-30b7-4333-ade8-422587966199)
@@ -253,6 +258,12 @@ ROW=0
 push {r1}
 
 ```
+```
+name=admin
+password=Y3tiStarCur!ouspassword=admin
+```
+
+
 
 <!--stackedit_data:
 eyJoaXN0b3J5IjpbLTExMzkyMzM1MiwtNDIyMzQ1OTI2LC0xMj
