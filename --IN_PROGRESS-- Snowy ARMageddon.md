@@ -98,16 +98,16 @@ Now that we've understood how this works, we can craft our own hex byte string t
 
 ```
 /* ADDR */
-mov r1, #0x01    // store '1' in R1
+mov r1, #0x01   // store '1' in R1
 lsl r1, #8      // shift by 8 bits to te left
 add r1, #0xe9   // add '233' to R1
-lsl r1, #8     // shift by 8 bits to te left
-add r1, #0x08    // add '8' and '2' to R1 (since we cannot pass the hex value for 10; '0x0a'
+lsl r1, #8      // shift by 8 bits to te left
+add r1, #0x08   // add '8' and '2' to R1 (since we cannot pass the hex value for 10; '0x0a'
 add r1, #0x02
-lsl r1, #8     // shift by 8 bits to te left
-add r1, #0x08    // add '8' and '2' to R1 (since we cannot pass the hex value for 10; '0x0a'
+lsl r1, #8      // shift by 8 bits to te left
+add r1, #0x08   // add '8' and '2' to R1 (since we cannot pass the hex value for 10; '0x0a'
 add r1, #0x02
-lsl r1, #8     // shift by 8 bits to te left
+lsl r1, #8      // shift by 8 bits to te left
 push {r1}       
 ```
 
