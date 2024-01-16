@@ -146,7 +146,8 @@ push {r1}
 ```
 Now we can simply copy this set of instructions to the assembler and convert it to a hex string we can paste into the Python Script:
 
-![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/5e6676c6-ed19-4ece-be39-ce287b633105)
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/e90c2569-f13d-42d5-8eb3-3b0ecacc003c)
+
 
 
 
