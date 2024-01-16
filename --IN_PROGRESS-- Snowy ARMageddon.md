@@ -221,6 +221,9 @@ ROW=0
 ...
 
 ```
+
+With this username / password combination in hand we can now head abck to the browser and log in to the camera's web interface, where we are greeted by the first flag for this challenge.
+
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/65a346a5-30b7-4333-ade8-422587966199)
 ```
 
