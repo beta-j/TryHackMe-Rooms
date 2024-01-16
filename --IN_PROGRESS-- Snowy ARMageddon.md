@@ -18,7 +18,7 @@
 
 
 ### TL;DR : ###
--  R
+-  Use assembly decomp
 #   
 
 >Christmas 2023 is already just around the corner. The Bandit Yeti has been sleeping for most of the year to prepare to hack back into the Best Festival Company. Should he have used that time to plan his attack? Probably. But Yetis need a lot of energy, so don't judge!
