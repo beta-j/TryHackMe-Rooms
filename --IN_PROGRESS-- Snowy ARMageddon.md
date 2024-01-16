@@ -148,7 +148,8 @@ Now we can simply copy this set of instructions to the assembler and convert it 
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/e90c2569-f13d-42d5-8eb3-3b0ecacc003c)
 
-You can follow [THIS LINK]([url](https://shell-storm.org/online/Online-Assembler-and-Disassembler/?inst=mov+r1%2C+%230x01++%0D%0Alsl+r1%2C+%238++++%0D%0Aadd+r1%2C+%230xe9+++%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02%0D%0Alsl+r1%2C+%238++++++%0D%0Apush+%7Br1%7D++&arch=arm&as_format=inline#assembly)) and simply change the `#0x01` and `#0xe9` values to correspond to your IP address - but remember to avoid using any *bad characters*!
+You can follow [THIS LINK](https://shell-storm.org/online/Online-Assembler-and-Disassembler/?inst=mov+r1%2C+%230x01++%0D%0Alsl+r1%2C+%238++++%0D%0Aadd+r1%2C+%230xe9+++%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02%0D%0Alsl+r1%2C+%238++++++%0D%0Apush+%7Br1%7D++&arch=arm&as_format=inline#assembly) and simply change the `#0x01` and `#0xe9` values to correspond to your IP address - but remember to avoid using any *bad characters*!
+
 
 
 #  
