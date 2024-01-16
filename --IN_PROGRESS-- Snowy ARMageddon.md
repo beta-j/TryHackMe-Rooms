@@ -5,7 +5,7 @@
 ### CONTENTS : ###
 [TL;DR](#tldr-)
 
-[PROCEDURE](#procedure-)
+[PROCEDURE](#procedure)
 
 -  [Part 1 - Retrieving the WiFi SSID](#part-1---retrieving-the-wifi-ssid)
     
