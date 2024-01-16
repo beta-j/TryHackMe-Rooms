@@ -1,4 +1,39 @@
-### Snowy ARMageddon ###
+# Snowy ARMageddon #
+### https://tryhackme.com/room/armageddon2r ###
+
+#  
+### CONTENTS : ###
+[TL;DR](#tldr-)
+
+[PROCEDURE](#procedure-)
+
+-  [Part 1 - Retrieving the WiFi SSID](#part-1---retrieving-the-wifi-ssid)
+    
+-  [Part 2 - Retrieving the WiFi Password](#part-2---retrieving-the-wifi-password)
+    
+-  [Part 3 - Decrypting and Analysing WiFi Traffic](#part-3---decrypting-and-analysing-wifi-traffic)
+    
+-  [Part 4 - Decrypting and Replaying a RDP Session](#part-4---decrypting-and-replaying-a-rdp-session)
+
+
+
+### TL;DR : ###
+-  R
+#   
+
+>Christmas 2023 is already just around the corner. The Bandit Yeti has been sleeping for most of the year to prepare to hack back into the Best Festival Company. Should he have used that time to plan his attack? Probably. But Yetis need a lot of energy, so don't judge!
+
+This room was included as one of the sidequests for the TryHackMe Advent of Cyber 2023.  We are given [a network capture file; `VanSpy.pcapng`](assets/VanSpy.pcapng) and tasked with answering the following questions:
+
+**NOTE :** Passwords, hashes and flags are redacted in this document.  If you'd like to know the answers simply go to the [TryHackMe Room](https://tryhackme.com/room/adv3nt0fdbopsjcap) and follow the steps - it's free 😄
+
+>What is the content of the first flag?
+>
+>What is the content of the `yetikey2.txt` file?
+>
+
+
+## Procedure ##
 
 Victim IP: `10.10.106.239`
 
