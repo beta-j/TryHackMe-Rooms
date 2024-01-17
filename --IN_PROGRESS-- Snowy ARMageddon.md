@@ -12,7 +12,7 @@
 
 -  [Part 1 - Port Scanning and Enumeration](#part-1---port-scanning-and-enumeration)
     
--  [Part 2 - Modifying Assembly Code and Obtaining Reverse Shell](#part-2---retrieving-the-wifi-password)
+-  [Part 2 - Modifying Assembly Code and Obtaining Reverse Shell](#part-2---modifying-assembly-code-and-obtaining-reverse-shell)
     
 -  [Part 3 - Decrypting and Analysing WiFi Traffic](#part-3---decrypting-and-analysing-wifi-traffic)
     
@@ -42,7 +42,7 @@ This room was included as one of the sidequests for the TryHackMe Advent of Cybe
 
 ## Procedure ##
 
-# Part 1 - Port Scanning and Enumeration #
+### Part 1 - Port Scanning and Enumeration ###
 
 Start with a `nmap` scan with the `-sS` switch and go have a coffee while it runs.
 The `-sS` switch asks `nmap` to perform a `SYN Stealth scan` which is a relatively stealthy (remember that we are told that stealth is important in this challenge) and quick scan.  A `SYN Stealth scan` never opens a full TCP connection and instead relies on sending  `SYN` packets and waiting for a `SYN/ACK` or `RST` responses.
@@ -83,7 +83,7 @@ Let's have a look at port `50628` next - maybe we can access it through the brow
 ![Trivision Dashboard](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/13c1fc4f-a870-44b9-80a0-f95748667583)
 
 
-# Part 2 - Modifying Assembly Code and Obtaining Reverse Shell #
+### Part 2 - Modifying Assembly Code and Obtaining Reverse Shell ###
 
 Some Google searching for `Trivision NC-227WF Exploit` quickly leads us to the following article: [(https://no-sec.net/arm-x-challenge-breaking-the-webs/)](https://no-sec.net/arm-x-challenge-breaking-the-webs/) and just by looking at the title it is evident that we're dealing with an ARM processor architecture (and the `ARMageddon` in the challenge title is making more sense now).
 
