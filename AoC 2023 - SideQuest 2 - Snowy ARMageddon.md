@@ -21,7 +21,7 @@
 
 ### TL;DR : ###
 -  Scan the Victim IP to determine open ports on 8080 and 50628
--  Find and modify an exploit (including some assembly code) to establish a revers shell to an IP Camera
+-  Find and modify a buffer overflow exploit to establish a reverse shell to an IP Camera
 -  Pivot from the IP camera to an internal-only web application by using NoSQLi
 #   
 
