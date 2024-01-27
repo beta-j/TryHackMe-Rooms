@@ -258,11 +258,11 @@ The suspicious tool that the attacker used to extract a juicy file from the serv
 
 ### Part 4 - Decrypting and Replaying a RDP Session ###
 
-From the Powershell output we just got to examine, we can see that the attacker retrieved a PFX certificate file and converted the contents *_to_* base64.  We can simply copy the cleartext output of this operation and convert it back *from* base64 to recreate the pfx file.  An easy way of doing this is to use [Cyberchef](https://gchq.github.io/CyberChef/) with the **From Base64** Recipe element.  Just paste the copied base64 string in the **Input** box and then click on the *Save* icon on the Output box to save the resulting output to a pfx file - which we are going to call `certificate.pfx`.
+From the Powershell output we just got to examine, we can see that the attacker retrieved a PFX certificate file and converted the contents *_to_* base64.  We can simply copy the cleartext output of this operation and convert it back *from* base64 to recreate the pfx file.  An easy way of doing this is to use [Cyberchef](https://gchq.github.io/CyberChef/) with the **From Base64** Recipe element.  Just paste the copied base64 string in the **Input** box and then click on the *Save* icon on the Output box to save the resulting output to a PFX file - which we are going to call `certificate.pfx`.
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/7d273931-4096-4fb7-bbb1-44f421ddae88)
 
-Now we can use this certificate file ro decrypt the RDP traffic in Wireshark similarly to what we did to decrypt the WiFi traffic in [Part 3](#part-3---decrypting-and-analysing-wifi-traffic).  In Wireshark go to **Edit** > **Preferences** > **Protocols** > **TLS** and click on the **Edit** button next to *RSA keys list*.  For port enter `3389` which is the standard RDP port, for protocol enter `tpkt`, for the *Key File* browse to the `certificate.pfx` file we just created and for the *Password* enter `mimikatz` since this is the default password applied by Mimikatz when using it to extract certificates. 
+Now we can use this reconstructed certificate file to decrypt the RDP traffic in Wireshark similarly to what we did to decrypt the WiFi traffic in [Part 3](#part-3---decrypting-and-analysing-wifi-traffic).  In Wireshark go to **Edit** > **Preferences** > **Protocols** > **TLS** and click on the **Edit** button next to *RSA keys list*.   For port enter `3389` which is the standard RDP port, for protocol enter `tpkt`, for the *Key File* browse to the `certificate.pfx` file we just created and for the *Password* enter `mimikatz` since this is the default password applied by Mimikatz when using it to extract certificates. 
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/39233703-eba9-43de-a0f4-b04563b4f491)
 
@@ -271,22 +271,22 @@ Now for the most interesting part of this challenge...
 After some hours of research on what to do next I came across this ingenious project called [**PyRDP**](https://github.com/GoSecure/pyrdp) which will generate a video replay from a decrypted RDP session's network capture - which is exactly what we're after!
 
 To install PyRDP we can clone into the project's repo:
-```
+```console
 git clone https://github.com/GoSecure/pyrdp
 ```
 
 Then follow the [installation instructions](https://github.com/GoSecure/pyrdp/blob/main/docs/devel.adoc) to get all the necessary dependancies installed:
-```
+```console
 sudo apt install python3-pip python3-venv build-essential python3-dev git openssl libgl1-mesa-dev libnotify-bin libxkbcommon-x11-0 libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-util1 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libavformat-dev libavcodec-dev libavdevice-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
 ```
 
 Reboot our machine:
-```
+```console
 sudo reboot 0
 ```
 
 Then install pyrdp in a virtual environment:
-```
+```console
 cd pyrdp
 python3 -m venv venv
 source venv/bin/activate
@@ -296,10 +296,10 @@ pip3 install -U -e '.[full]'
 **NOTE:**  *I tried several different ways of installing and running PyRDP incuding a Docker install and using `pipx`, but I could only get it to work without issues with the method described above*. 
 
 
-Before passing on the pcap file to PyRDP we need to extract the decrypted RDP session PDUs.  This can easily be done in Wireshark by going to **File** > **Export PDUs to File**, then selecting **OSI layer 7** in the dropdown menu and clicking on **OK**.  Wireshark will now only show us the PDUs related to the RDP session as a new capture file and we can **File** > **Save As** to save it as a new PCAP file; in our case `osil7extract.pcap` (Remember to select the *Wireshark /tcpdump/...-pcap* format when saving).
+Before passing on the PCAP file to PyRDP we need to extract the decrypted RDP session PDUs.  This can easily be done in Wireshark by going to **File** > **Export PDUs to File**, then selecting **OSI layer 7** in the dropdown menu and clicking on **OK**.  Wireshark will now only show us the PDUs related to the RDP session as a new capture file and we can **File** > **Save As** to save it as a new PCAP file; in our case `osil7extract.pcap` (Remember to select the *Wireshark /tcpdump/...-pcap* format when saving).
 
 Now we can use PyRDP's 'convertor' tool to convert our PCAP file to a format that the PyRDP player can parse as a video.
-```
+```console
 # pyrdp-convert ../osil7extract.pcap                            
 [*] Analyzing PCAP '../osil7extract.pcap' ...
     - 10.0.0.2:55510 -> 10.1.1.1:3389 : plaintext
