@@ -54,7 +54,7 @@ We are given a file called [VanSpy.pcapng](assets/VanSpy.pcapng).  PCAPNG (a.k.a
 
 For the time being we can't see much - as most of the traffic is encrypted - but we can start working towards answering the first couple of questions.  [Aircrack-NG](https://www.aircrack-ng.org/) is an excellent tool for this.  it comes pre-installed with Kali Linux distributions and can be used to analyse network captures and extract valuable information about wifi networks.  However, Aircrack-NG does not accept PCAPNG files as its input (yet) - so first we need to convert our PCAPNG to a regular PCAP by going to **File** -> **Save As** in Wireshark and selecting ***Modified tcpdump -pcap*** in the **Save as type:** field and saving the file as `VanSpy.pcap`.  Now we can go to ur Linux terminal and examine the PCAP file with Aircrack-NG:
 
-```linux
+```cil
 $ aircrack-ng VanSpy.pcap  
 Reading packets, please wait...
 Opening VanSpy.pcap
