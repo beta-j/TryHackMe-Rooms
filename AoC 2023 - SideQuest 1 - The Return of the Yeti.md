@@ -113,7 +113,8 @@ So to answer the second question, the WiFi password is **`C********`**
 #  
 ### Part 3 - Decrypting and Analysing WiFi Traffic ###
 
-Now that we have a WiFi password we're going to need to decrypt the WiFi traffic in the network capture to be able to continue our investigation further.  To do this in Wireshark go to **Edit** > **Preferences** > **Protocols** > **IEEE 802.11** and click on the **Edit** button next to *Decryption Keys*.  Click on the `+` sign at the bottom left corner and select *Key type* : `wpa-pwd` and enter the password in the format `password:SSID`.  So in our case this will be `C********:FreeWifiBFC`. Then click on **OK**.
+Now that we have a WiFi password we're going to need to decrypt the WiFi traffic in the network capture to be able to continue our investigation further.  
+To do this, in Wireshark go to **Edit** > **Preferences** > **Protocols** > **IEEE 802.11** and click on the **Edit** button next to *Decryption Keys*.  Click on the `+` sign at the bottom left corner and select *Key type* : `wpa-pwd` and enter the password in the format `password:SSID`.  So in our case this will be `C********:FreeWifiBFC`. Then click on **OK**.
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/42718960-4238-4466-af1d-6f92b2586ba8)
 
@@ -249,15 +250,15 @@ MIIJuQIB...<R E D A C T E D>....
 PS C:\Users\Administrator> exit
 ```
 
-Now it's easy to see what the attacker was up to as we have the all the Powershell commands and outputs in cleartext infront of us.  Of particular interest is that he downloaded and executed `mimikatz.exe` which is a tool that is used to extract user crredentials from a system's memory.  From the output of `mimikatz.exe` we can also see that he succesfully retrieved a pfx certificate file called `LOCAL_MACHINE_Remote Desktop_0_INTERN-PC.pfx`.   This answers the thrid question of this room.  
+Now it's easy to see what the attacker was up to as we have the all the Powershell commands and outputs in cleartext infront of us.  Of particular interest is that they downloaded and executed `mimikatz.exe` which is a tool that is used to extract user credentials from a system's memory.  From the output of `mimikatz.exe` we can also see that they succesfully retrieved a PFX certificate file called `LOCAL_MACHINE_Remote Desktop_0_INTERN-PC.pfx`.   This answers the thrid question of this room.  
 
-The suspicious tool that the attacker used to extract a juicy file from the server was **`mimikatz`**
+The suspicious tool that the attacker used to extract a juicy file from the server was **`mimikatz`**.
 
 #  
 
 ### Part 4 - Decrypting and Replaying a RDP Session ###
 
-From the Powershell output we just got to examine, we can see that the attacker retrieved a pfx certificate file and converted the contents *to* base64.  We can simply copy the cleartext output of this operation and convert it back *from* base64 to recreate the pfx file.  An easy way of doing this is to use [Cyberchef](https://gchq.github.io/CyberChef/) with the **From Base64** Recipe element.  Just paste the copied base64 string in the **Input** box and then click on the *Save* icon on the Output box to save the resulting output to a pfx file - which we are going to call `certificate.pfx`.
+From the Powershell output we just got to examine, we can see that the attacker retrieved a PFX certificate file and converted the contents *_to_* base64.  We can simply copy the cleartext output of this operation and convert it back *from* base64 to recreate the pfx file.  An easy way of doing this is to use [Cyberchef](https://gchq.github.io/CyberChef/) with the **From Base64** Recipe element.  Just paste the copied base64 string in the **Input** box and then click on the *Save* icon on the Output box to save the resulting output to a pfx file - which we are going to call `certificate.pfx`.
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/7d273931-4096-4fb7-bbb1-44f421ddae88)
 
