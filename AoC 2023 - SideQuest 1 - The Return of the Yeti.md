@@ -20,7 +20,7 @@
 
 
 ### TL;DR : ###
--  Retrieve WiFi password from PCANG file using Aircrack-NG
+-  Retrieve WiFi password from PCAPNG file using Aircrack-NG
 -  Decrypt Wifi Encrypted traffic in Wireshark
 -  Retrieve and recreate RDP certificate from decrypted TCP stream
 -  Use reconstructed RDP certificate to decrypt TLS traffic in Wireshark
