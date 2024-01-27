@@ -318,7 +318,7 @@ Now we can use PyRDP's 'convertor' tool to convert our PCAP file to a format tha
 
 ...and finally we can look at the generated _playback video and keylogs!_:
 ```console
-pyrdp-player 20231125145052_10.0.0.2:55510-10.1.1.1:3389.pyrdp 
+# pyrdp-player 20231125145052_10.0.0.2:55510-10.1.1.1:3389.pyrdp 
 [2024-01-13 13:57:02,759] - INFO - pyrdp.player - Listening for connections on 127.0.0.1:3000
 ```
 ![Animation2](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/87d2435b-2a71-46d8-bf9d-2633c5e20580)
