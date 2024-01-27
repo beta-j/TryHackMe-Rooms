@@ -272,26 +272,26 @@ After some hours of research on what to do next I came across this ingenious pro
 
 To install PyRDP we can clone into the project's repo:
 ```console
-git clone https://github.com/GoSecure/pyrdp
+# git clone https://github.com/GoSecure/pyrdp
 ```
 
 Then follow the [installation instructions](https://github.com/GoSecure/pyrdp/blob/main/docs/devel.adoc) to get all the necessary dependancies installed:
 ```console
-sudo apt install python3-pip python3-venv build-essential python3-dev git openssl libgl1-mesa-dev libnotify-bin libxkbcommon-x11-0 libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-util1 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libavformat-dev libavcodec-dev libavdevice-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
+# sudo apt install python3-pip python3-venv build-essential python3-dev git openssl libgl1-mesa-dev libnotify-bin libxkbcommon-x11-0 libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-util1 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libavformat-dev libavcodec-dev libavdevice-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
 ```
 
 Reboot our machine:
 ```console
-sudo reboot 0
+# sudo reboot 0
 ```
 
 Then install pyrdp in a virtual environment:
 ```console
-cd pyrdp
-python3 -m venv venv
-source venv/bin/activate
-pip3 install -U pip setuptools wheel
-pip3 install -U -e '.[full]'
+# cd pyrdp
+# python3 -m venv venv
+# source venv/bin/activate
+# pip3 install -U pip setuptools wheel
+# pip3 install -U -e '.[full]'
 ```
 **NOTE:**  *I tried several different ways of installing and running PyRDP incuding a Docker install and using `pipx`, but I could only get it to work without issues with the method described above*. 
 
