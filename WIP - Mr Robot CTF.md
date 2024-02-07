@@ -1,4 +1,4 @@
-#### THIS PAGE IS A WORKS IN PROGRESS ####
+# THIS PAGE IS A WORK IN PROGRESS... #
 
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/109cc692-4ce9-4be0-83b8-935211f82301)
