@@ -71,5 +71,32 @@ root@ip-10-10-140-73:~# curl http://10.10.90.47/key-1-of-3.txt
 073403<R E D A C T E D>0724b9
 ```
 
+## FLAG 2 of 3 ##
+
+>Hint: `There's something fishy about this wordlist... Why is it so long?`
+
+
+We should also go ahead and download a copy of `fsocity.dic`.  Having a look at its contents, it appears to be some kind of wordlist.  Based on past expereinces with similar CTF challenges, this indicates that we'll probably be needing this wordlist to perform a bruteforce password cracking at some point later on.
+
+For the time being, let's take a closer look at the website and see whether we can find an interestiugn directories.  We can use `gobuster` with a small wordlist for this:
+
+```console
+root@ip-10-10-140-73:~# gobuster dir -u http://10.10.90.47 -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -t 1000 -q
+/license (Status: 200)
+/blog (Status: 301)
+/sitemap (Status: 200)
+/js (Status: 301)
+/rss (Status: 301)
+/login (Status: 302)
+/admin (Status: 301)
+```
+
+Interestingly we can see a `/login` page and if we try accessing this we are redirected to `wp-login.php`, which is a Wordpress login page! :)
+
+![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/949e60a1-f0b6-494e-9090-01ccdeb9f84e)
+
+
+
+
 
 
