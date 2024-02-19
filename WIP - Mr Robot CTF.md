@@ -101,11 +101,11 @@ root:~# gobuster dir -u http://10.10.90.47 -w /usr/share/wordlists/dirbuster/dir
 
 Interestingly we can see a `/wp-login` page and if we try accessing this we are served a Wordpress login page! :)
 
-If we try logging in with username `admin` and password `admin` (just to see what happens).  The page serves up an error saying **_Invalid username_**.  This is actually great news fopr us as this means we have a way of trying out multiple usernames and finding out which of them are valid.
+If we try logging in with username `admin` and password `admin` (just to see what happens).  The page serves up an error saying **_Invalid username_**.  This is actually great news for us as this means we have a way of trying out multiple usernames and finding out which of them are valid.
 
 ![image](https://github.com/beta-j/TryHackMe-Rooms/assets/60655500/59c85716-60e0-4cb6-a03d-2dbc19ef8298)
 
-We can do this quite easily using a tool such as `hydra` and it makes sense to use the `fsocity.dic` wordlist we found earlier to attempt this.  But first let's fire up Burp Suite and have a look at what happens when we submit a username and password.  This will allow us to consturct the proper hydra command we need to use.
+We can do this quite easily using a tool such as `Hydra` and it makes sense to use the `fsocity.dic` wordlist we found earlier to attempt this.  But first let's fire up Burp Suite and have a look at what happens when we submit a username and password to the login page.  This will allow us to consturct the proper hydra command we need to use.
 
 ```http
 POST /wp-login.php HTTP/1.1
