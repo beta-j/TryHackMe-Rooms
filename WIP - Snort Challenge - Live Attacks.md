@@ -196,3 +196,58 @@ We let Snort run for a while and a text file appears on the desktop with our fla
 
 ---
 
+Just like we did for the previous scenario, let's start Snort in sniffer mode and let it run for a while:
+```console
+ubuntu:~$ sudo snort -v -l .
+```
+
+We can now have a log at the log file that was generated
+```console
+ubuntu:~$ sudo snort -r snort.log.1743351878
+```
+
+Scrolling through the ouptut a specific port number immediately pops out amongst the others: port `4444`.  This port is commonly used by reverse-shells such as Metasploit and we know that that's what we're looking for in this scenario!
+```console
+03/30-16:25:18.062345 10.10.196.55:54148 -> 10.10.144.156:4444
+TCP TTL:64 TOS:0x0 ID:3091 IpLen:20 DgmLen:54 DF
+***AP*** Seq: 0x7E0E4D82  Ack: 0xB96AF664  Win: 0x1EB  TcpLen: 32
+TCP Options (3) => NOP NOP TS: 2358744824 1980912523 
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+```
+
+We can use the `-d` switch with Snort and the BPF filter `'port 4444`' to look at the payloads of these packets:
+```console
+ubuntu@ip-10-10-210-31:~$ sudo snort -r snort.log.1743351878 -d 'port 4444'
+```
+
+![image](https://github.com/user-attachments/assets/84771d89-d701-48a1-994d-fe39dec828e9)
+
+The results are quite concerning - it looks like the attacker is trying to exfiltrate some data from `10.10.196.55`.
+
+We now have enough information to craft our Snort rule:
+- Destination IP: `10.10.144.156`
+- Destination Port: `4444`
+- Protocol: `TCP`
+
+I decided to create the following two rule entries in `/etc/snort/rules/local.rules`:
+
+```dircolors
+alert tcp any 4444 <> any any (msg:"Possible reverse shell on port 4444"; sid:1000001; rev:1;)
+alert tcp 10.10.144.156 any <> any any (msg: "Malicious IP detected"; sid:1000002; rev:2;)
+```
+
+The first rule should match any traffic to/from port 4444 and flag it as a possible reverse shell, while the second rule will match on any traffic to/from the attacker's IP address.
+
+let's test it out:
+```console
+ubuntu:~$ sudo snort -c /etc/snort/rules/local.rules -A console
+```
+
+Looks like it's working ok!
+
+![image](https://github.com/user-attachments/assets/56519a49-138e-42f4-9a98-cf0e306015ef)
+
+So let's deploy it:
+```console
+ubuntu:~$ sudo snort -c /etc/snort/rules/local.rules -A full
+```
