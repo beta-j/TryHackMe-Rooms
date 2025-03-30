@@ -1,4 +1,4 @@
-# Snort Challenge - The Basics
+# Snort Challenge - Live Attacks
 ---
 **Description:** Put your snort skills into practice and defend against a live attack
 
