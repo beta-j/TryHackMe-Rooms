@@ -81,3 +81,63 @@ TCP TTL:128 TOS:0x0 ID:3917 IpLen:20 DgmLen:761 DF
 ***AP*** Seq: 0x36C21E28  Ack: 0x2E6B5384  Win: 0x2238  TcpLen: 20
 =+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
 ```
+
+
+**Question 3**
+> What is the ACK number of packet 64?
+
+To answer this question we can simply run the last command again with `-n 64`
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ sudo snort -r snort.log.1743326372 -A full -n 64
+```
+
+Our answer is in the last packet entry in the output:
+```console
+WARNING: No preprocessors configured for policy 0.
+05/13-10:17:10.295515 145.254.160.237:3371 -> 216.239.59.99:80
+TCP TTL:128 TOS:0x0 ID:3917 IpLen:20 DgmLen:761 DF
+***AP*** Seq: 0x36C21E28  Ack: [REDACTED]  Win: 0x2238  TcpLen: 20
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+```
+
+**Question 4**
+> What is the SEQ number of packet 62?
+
+OK..so you know what to do by now...rinse and repeat:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ sudo snort -r snort.log.1743326372 -A full -n 62
+```
+
+```console
+WARNING: No preprocessors configured for policy 0.
+05/13-10:17:10.295515 145.254.160.237:3371 -> 216.239.59.99:80
+TCP TTL:128 TOS:0x0 ID:3917 IpLen:20 DgmLen:761 DF
+***AP*** Seq: [REDACTED]  Ack: 0x2E6B5384  Win: 0x2238  TcpLen: 20
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+```
+
+**Question 5**
+> What is the TTL of packet 65?
+
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ sudo snort -r snort.log.1743326372 -A full -n 65
+```
+
+```console
+WARNING: No preprocessors configured for policy 0.
+05/13-10:17:10.325558 [REDACTED}:[REDACTED] -> 65.208.228.223:80
+TCP TTL:[REDACTED] TOS:0x0 ID:3918 IpLen:20 DgmLen:40 DF
+***A**** Seq: 0x38AFFFF3  Ack: 0x114C81E4  Win: 0x25BC  TcpLen: 20
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+```
+
+**Question 6**
+> What is the source IP of packet 65?
+
+We can get this from the last packet entry for Question 5
+
+
+**Question 7**
+> What is the source port of packet 65?
+
+We can get this from the last packet entry for Question 5
