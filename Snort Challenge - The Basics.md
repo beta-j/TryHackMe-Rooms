@@ -9,6 +9,13 @@
 
 ## CONTENTS
 - [Task 1 - INTRODUCTION](#task-1---introduction)
+- [Task 2 - WRITING IDS RULES (HTTP)](#task-2--writing-ids-rules-http)
+- [Task 3 - WRITING IDS RULES (FTP)](#task-3--writing-ids-rules-ftp)
+- [Task 4 - WRITING IDS RULES (PNG)](#task-4--writing-ids-rules-png)
+- [Task 5 - WRITING IDS RULES (Torrent Metafile)](#task-5---writing-ids-rules-torrent-metafile)
+- [Task 6 - TROUBLESHOOTING RULE SYNTAX ERRORS](#task-6---troubleshooting-rule-syntax-errors)
+- [Task 7 - USING EXTERNAL RULES (MS17-010)](#task-7---using-external-rules-ms17-010)
+- [Task 8 - USING EXTERNAL RULES (Log4j)](#task-8---using-external-rules-log4j)
 
 
 ---
@@ -773,7 +780,7 @@ This can be answered with a simple Google search: [https://www.tenable.com/plugi
 
 
 ---
-## Task 7 - USING EXTERNAL RULES (Log4j)
+## Task 8 - USING EXTERNAL RULES (Log4j)
 
 Once again we are given two rules files and a pcap:
 ```console
