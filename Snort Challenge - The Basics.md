@@ -1,12 +1,17 @@
 # Snort Challenge - The Basics
 ---
 **Description:** Put your snort skills into practice and write snort rules to analyse live capture network traffic.
+
 **Difficulty:** Medium
+
 **Link**: [https://tryhackme.com/r/room/snortchallenges1]((https://tryhackme.com/r/room/snortchallenges1))
+
 ---
 ## Task 1 - INTRODUCTION
 
 Simply click on the **Start Machine** button to launch the VM you will be using for this task and wait fo it to load.
+
+---
 
 ## Task 2- WRITING IDS RULES (HTTP)
 
@@ -871,7 +876,6 @@ Using cyberchef we can decode the Base64 encoded command from `KGN1cmwgLXMgNDUuM
 **Question 8**
 >What is the CVSS v2 score of the Log4j vulnerability?
 
-
-Typing cvss v2 Log4j into a search engine of choice we find CVE-2021-44228 Detail. A click on CVSS Version 2.0 under Severity reveals the score we're looking for.
-
+Search the internet for _"Log4J CVSS"_ and you will quickly find the CVSSv2 score for it.
+[LINK](https://www.tenable.com/plugins/was/113075)
 
