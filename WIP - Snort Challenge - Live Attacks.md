@@ -251,3 +251,8 @@ So let's deploy it:
 ```console
 ubuntu:~$ sudo snort -c /etc/snort/rules/local.rules -A full
 ```
+
+And after a few seconds a text file with our flag appears on the desktop!
+
+
+![image](https://github.com/user-attachments/assets/26a80ba5-17f8-496e-a928-8e7d3e859ab7)
