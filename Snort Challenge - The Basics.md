@@ -6,6 +6,11 @@
 
 **Link**: [https://tryhackme.com/r/room/snortchallenges1](https://tryhackme.com/r/room/snortchallenges1)
 
+
+## CONTENTS
+- [Task 1 - INTRODUCTION](#task-1---introduction)
+
+
 ---
 ## Task 1 - INTRODUCTION
 
