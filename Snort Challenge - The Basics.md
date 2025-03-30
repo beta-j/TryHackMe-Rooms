@@ -141,3 +141,136 @@ We can get this from the last packet entry for Question 5
 > What is the source port of packet 65?
 
 We can get this from the last packet entry for Question 5
+
+---
+## Task 3- WRITING IDS RULES (FTP)
+
+Now let's move to the folder for TASK 3 and have a look inside:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ cd ../TASK-3\ \(FTP\)/
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-3 (FTP)$ ls
+ftp-png-gif.pcap  local.rules
+```
+
+Once again we have a `local.rules` file to edit and a network capture to analyse.
+
+**Question 1**
+>Write a single rule to detect "all TCP port 21"  traffic in the given pcap.
+>
+>What is the number of detected packets?
+
+We can tackle this very similarly to TASK 2.  Add the following rule to `local.rules`:
+```yaml
+# ----------------
+# LOCAL RULES
+# ----------------
+# This file intentionally does not come with signatures.  Put your local
+# additions here.
+alert tcp any 21 <> any any (msg: "Port 21 Detected"; sid:100001; rev:1;)
+```
+
+Now simply run snort on the given capture file with these rules:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap -l .
+```
+
+Our answer is found under the *Action Stats* heading of the output:
+```console
+===============================================================================
+Action Stats:
+     Alerts:          [REDACTED] ( 72.922%)
+     Logged:          [REDACTED] ( 72.922%)
+     Passed:            0 (  0.000%)
+```
+
+**Question 2**
+>Investigate the log file.
+>
+>What is the FTP service name?
+
+The easiest way to tackle this is to use the `strings` command with `grep` to look for *FTP* in the log file:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo strings snort.log.1743327826 | grep FTP
+}220 [REDACTED] FTP Service
+~220 [REDACTED] FTP Service
+220 [REDACTED] FTP Service
+220 [REDACTED] FTP Service
+```
+
+**Question 3**
+>**Clear the previous log and alarm files.**
+>
+>Deactivate/comment on the old rules.
+>
+>Write a rule to detect failed FTP login attempts in the given pcap.
+>
+>What is the number of detected packets?
+
+
+The hint provided with this question tells us that:
+>*Each failed FTP login attempt prompts a default message with the pattern; "530 User". Try to filter the given pattern in the inbound FTP traffic.*
+
+So we need to write a rule that looks for packets that include the text *"530 User"* (remember to comment out the previous rule):
+
+```yaml
+# ----------------
+# LOCAL RULES
+# ----------------
+# This file intentionally does not come with signatures.  Put your local
+# additions here.
+#alert tcp any 21 <> any any (msg: "Port 21 Detected"; sid:100001; rev:1;)
+alert tcp any any <> any any (msg:"Failed FTP login attempt";content:"530 User";sid:100001; rev:1;)
+```
+
+Now we can run Snort using this updated rule file:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap
+```
+
+The number of detected packets is near the end of the command output under the heading *Action Stats:*
+```console
+===============================================================================
+Action Stats:
+     Alerts:           [REDACTED] (  9.739%)
+     Logged:           [REDACTED] (  9.739%)
+     Passed:            0 (  0.000%)
+```
+
+**Question 4**
+>**Clear the previous log and alarm files.**
+>
+>Deactivate/comment on the old rules.
+>
+>Write a rule to detect successful FTP logins in the given pcap.
+>
+>What is the number of detected packets?
+
+
+This time we are tasked with detecting successful logins, so the process will be the same as for Question 3, but this time we need to match with the pattern *"230 User"* which indicates a successful login.
+
+```console
+# ----------------
+# LOCAL RULES
+# ----------------
+# This file intentionally does not come with signatures.  Put your local
+# additions here.
+#alert tcp any 21 <> any any (msg: "Port 21 Detected"; sid:100001; rev:1;)
+#alert tcp any any <> any any (msg:"Failed FTP login attempt";content:"530 User";sid:100001; rev:1;)
+alert tcp any any <> any any (msg:"Failed FTP login attempt";content:"230 User";sid:100001; rev:1;)
+```
+
+and run Snort again:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap
+```
+
+And the answer is once again at the bottom of the command output:
+```console
+===============================================================================
+Action Stats:
+     Alerts:            [REDACTED] (  0.238%)
+     Logged:            [REDACTED] (  0.238%)
+     Passed:            0 (  0.000%)
+```
+
+
