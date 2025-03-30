@@ -453,5 +453,29 @@ local.rules  torrent.pcap
 ```
 
 
+**Question 1**
+>Write a rule to detect the torrent metafile in the given pcap.
+>
+>What is the number of detected packets?
 
+The hint for this question indicates that we should try matching the `contents` to a `.torrent` extension that is used with Torrent metafiles.
+
+We can use the following rule for this:
+```yaml
+alert tcp any any <> any any (msg:"Torrent metafile detected"; content:".torrent";sid:100001;rev:1;)
+```
+
+You know the drill by now...
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-5 (TorrentMetafile)$ sudo snort -c local.rules -r torrent.pcap -l .
+```
+
+and our answer is here:
+```console
+===============================================================================
+Action Stats:
+     Alerts:            [REDACTED] (  3.571%)
+     Logged:            {REDACTED} (  3.571%)
+     Passed:            0 (  0.000%)
+```
 
