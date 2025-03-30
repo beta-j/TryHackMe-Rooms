@@ -123,13 +123,76 @@ ubuntu:~$ nano /etc/snort/rules/local.rules
 
 Here is the rule I used:
 ```dircolors
-drop tcp 10.10.245.36 any -> any 22 (msg:"SSH attempt from malicious IP"; sid:1000001; rev:1;)
+alert tcp 10.10.245.36 any -> any 22 (msg:"SSH attempt from malicious IP"; sid:1000001; rev:1;)
 ```
 
 The rule works as follows:
-- `drop`: drops any packets matching the rule
+- `alert`: creates a log entry when any packets match the rule
 - `tcp`: looks for TCP packets
 - `10.10.245.36`: coming from any port of 10.10.245.36
 - `->`: inbound
 - `any 22`: towards port 22 of any IP address
+
+We can test out this rule in console mode:
+```console
+ubuntu:~$ sudo snort -c /etc/snort/rules/local.rules -A console
+```
+
+We can see the Snort log updating live and the alerts coming up whenever a packet matches the rule we created:
+
+![image](https://github.com/user-attachments/assets/12c4421f-6ed1-43b1-8ff5-ac05eaba6670)
+
+We can now go ahead and deploy the rule using the `-A full` switch
+
+```console
+ubuntu:~$ sudo snort -c /etc/snort/rules/local.rules -A full
+```
+
+We let Snort run for a while and a text file appears on the desktop with our flag for this task.
+
+---
+
+## Scenario 2 - REVERSE-SHELL
+
+>**[+] THE NARRATOR**
+>Good Job! Glad to have you in the team!
+>
+>**[+] J.A.V.A.**
+>Congratulations sir. It is inspiring watching you work.
+>
+>**[+] You**
+>Thanks team. J.A.V.A. can you do a quick scan for me? We haven't investigated the outbound traffic yet. 
+>
+>**[+] J.A.V.A.**
+>Yes, sir. Outbound traffic investigation has begun. 
+>
+>**[+] THE NARRATOR**
+>The outbound traffic? Why?
+>
+>**[+] YOU**
+>We have stopped some inbound access attempts, so we didn't let the bad guys get in. How about the bad guys who are already inside? Also, no need to mention the insider risks, huh? The dwell time is still around 1-3 months, and I am quite new here, so it is worth checking the outgoing traffic as well.
+>
+>**[+] J.A.V.A.**
+>Sir, persistent outbound traffic is detected. Possibly a reverse shell...
+>
+>**[+] YOU**
+>You got it!
+>
+>**[+] J.A.V.A.**
+>**Sir, you need to observe the traffic with Snort and identify the anomaly first. Then you can create a rule to stop the reverse shell. GOOD LUCK!**
+>
+>---
+>
+>First of all, start Snort in sniffer mode and try to figure out the attack source, service and port.
+>
+>Then, write an IPS rule and run Snort in IPS mode to stop the brute-force attack. Once you stop the attack properly, you will have the flag on the desktop!
+>
+>Here are a few points to remember:
+>
+>- Create the rule and test it with "-A console" mode. 
+>- Use "**-A full**" mode and the **default log path** to stop the attack.
+>- Write the correct rule and run the Snort in IPS "-A full" mode.
+>- **Block the traffic at least for a minute** and then the flag file will appear on your desktop.
+
+---
 
