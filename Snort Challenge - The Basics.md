@@ -4,7 +4,7 @@
 
 **Difficulty:** Medium
 
-**Link**: [https://tryhackme.com/r/room/snortchallenges1]((https://tryhackme.com/r/room/snortchallenges1))
+**Link**: [https://tryhackme.com/r/room/snortchallenges1](https://tryhackme.com/r/room/snortchallenges1)
 
 ---
 ## Task 1 - INTRODUCTION
@@ -15,7 +15,7 @@ Simply click on the **Start Machine** button to launch the VM you will be using 
 
 ## Task 2- WRITING IDS RULES (HTTP)
 
-For this task we are provided with two files inside the folder `TASK-2 (HTTP)`.  
+For this task we are provided with two files inside the folder `TASK-2 (HTTP)`  
 
 ```console
 ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files$ cd TASK-2\ \(HTTP\)/
@@ -31,8 +31,8 @@ local.rules  mx-3.pcap
 >What is the number of detected packets you got?
 >Note: You must answer this question correctly before answering the rest of the questions.
 
-We're starting off with an easy one.  Open `local.rules` using nano or any othe rtext editor and add the following snort rule:
-```yaml
+We're starting off with an easy one.  Open `local.rules` using nano or any other text editor and add the following snort rule:
+```dircolors
 # ----------------
 # LOCAL RULES
 # ----------------
@@ -165,7 +165,7 @@ Once again we have a `local.rules` file to edit and a network capture to analyse
 >What is the number of detected packets?
 
 We can tackle this very similarly to TASK 2.  Add the following rule to `local.rules`:
-```yaml
+```dircolors
 # ----------------
 # LOCAL RULES
 # ----------------
@@ -215,7 +215,7 @@ The hint provided with this question tells us that:
 
 So we need to write a rule that looks for packets that include the text *"530 User"* (remember to comment out the previous rule):
 
-```yaml
+```dircolors
 # ----------------
 # LOCAL RULES
 # ----------------
@@ -366,7 +366,7 @@ The answer lies in **File Signatures**.  Each file type has a specific string of
 So this should be quote simple now - just look for that file siganture using the `content` option in the rules. However - **keep in mind that the file signature is in hexadecimal**, so we need to use `|` in our rule to instruct Snort to match hexadecimal byte values. 
 
 So the `local.rules` file needs to look something like this now:
-```yaml
+```dircolors
 # ----------------
 # LOCAL RULES
 # ----------------
@@ -416,7 +416,7 @@ And our answer is right there - near the top of the output.
 
 We can tackle this in a similar way to Question 1.  GIF has  two possible file sigantures: `47 49 46 38 37 61` or `47 49 46 38 39 61`.  So we can edit our `local.rules` file as follows:
 
-```yaml
+```dircolors
 # ----------------
 # LOCAL RULES
 # ----------------
@@ -466,7 +466,7 @@ local.rules  torrent.pcap
 The hint for this question indicates that we should try matching the `contents` to a `.torrent` extension that is used with Torrent metafiles.
 
 We can use the following rule for this:
-```yaml
+```dircolors
 alert tcp any any <> any any (msg:"Torrent metafile detected"; content:".torrent";sid:100001;rev:1;)
 ```
 
@@ -559,7 +559,7 @@ ERROR: local-1.rules(8) ***Rule--PortVar Parse error: (pos=1,error=not a number)
 The output tells us that we are looking for a possible syntax error (*"not a number"*) near `any(msg:`
 
 If we open `local-1.rules` we can see there is a missing space between `any` and `(msg:`.  The fixed rule should read as follows:
-```yaml
+```dircolors
 alert tcp any 3372 -> any any (msg: "Troubleshooting 1"; sid:1000001; rev:1;)
 ```
 
@@ -588,7 +588,7 @@ Fatal Error, Quitting..
 ```
 
 Opening `local-2.rules` we see that there is no port specified for the source, and we need to add `any` here:
-```yaml
+```dircolors
 alert icmp any any -> any any (msg: "Troubleshooting 2"; sid:1000001; rev:1;)
 ```
 
@@ -617,7 +617,7 @@ Fatal Error, Quitting..
 ```
 
 Opening `local-3.rules` we can quickly see that the two rules have the same `sid` which is causing the error.  We can change the `sid` for the second rule to `sid:1000002`.
-```yaml
+```dircolors
 alert icmp any any -> any any (msg: "ICMP Packet Found"; sid:1000001; rev:1;)
 alert tcp any any -> any 80,443 (msg: "HTTPX Packet Found"; sid:1000002; rev:1;)
 ```
@@ -649,7 +649,7 @@ The error mentions *"unmatch quote"* so we're probably looking for a missing quo
 
 The first error is the same as in Question 3 - the two rules have the same `sid` value.
 The second problem is that there is a spurious `:` after `"HTTPX Packet Found"` which we need to replace with a semi-colon (`;`).
-```yaml
+```dircolors
 alert icmp any any -> any any (msg: "ICMP Packet Found"; sid:1000001; rev:1;)
 alert tcp any 80,443 -> any any (msg: "HTTPX Packet Found"; sid:1000002; rev:1;)
 ```
@@ -665,7 +665,7 @@ Snort rules allow us to use one of two direction operators; `<>` or `->`.  Howev
 There is also another mistake in the second rule and the `;` following `sid` needs to be changed to a `:`
 Similarly the `:` after 1`"HTTPX Packet Found"` in the third rule needs to be changed to a `;`
 
-```yaml
+```dircolors
 alert icmp any any <> any any (msg: "ICMP Packet Found"; sid:1000001; rev:1;)
 alert icmp any any -> any any (msg: "Inbound ICMP Packet Found"; sid:1000002; rev:1;)
 alert tcp any any -> any 80,443 (msg: "HTTPX Packet Found": sid:1000003; rev:1;)
@@ -681,12 +681,12 @@ This time around we are told that we are looking for a _logical_ error instead o
 
 If we look inside `local-6.rules` we see that the rule is trying to look for HTTP GET requests but is trying to do so using the hex value `67 65 74`.  If we translate this to ASCII (using [cyberchef](https://gchq.github.io/CyberChef/#recipe=From_Hex('Auto')&input=NjcgNjUgNzQ)) we get the word `get`.  However the pattern matching in the rule is case-sensitive and we want it to match with `GET` (uppercase), so the hex value should read `|47 45 54|`.
 
-```yaml
+```dircolors
 alert tcp any any <> any 80  (msg: "GET Request Found"; content:"|47 45 54|"; sid: 100001; rev:1;)
 ```
 
 Or we can simply write `"GET"` to make the rule more readable:
-```yaml
+```dircolors
 alert tcp any any <> any 80  (msg: "GET Request Found"; content:"GET"; sid: 100001; rev:1;)
 ```
 
@@ -698,7 +698,7 @@ alert tcp any any <> any 80  (msg: "GET Request Found"; content:"GET"; sid: 1000
 
 Once again we are looking for a _logical_ error here.  This time the rule seems to work fine and even gives us some detections on the first run.  However wehn we look inside `local-7.rules` we can see that the rule is missing a `msg`.  This will still produce matches but the alerts will contain no information.
 The rule is looking for the hex value `2E 68 74 6D 6C` which translates to `.html`.  So we can add a suitably descriptive message to it:
-```yaml
+```dircolors
 alert tcp any any <> any 80  (msg:".html file detected"; content:"|2E 68 74 6D 6C|"; sid: 100001; rev:1;)
 ```
 So the answer to this final question is _**msg**_
@@ -732,7 +732,7 @@ ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ sudo snort -c
 >What is the number of detected packets?
 
 We need to craft a rule that matches on the string `\IPC$` - however just entering the string as it is would result in an error due to the `\` character.  We need to _escape_ this character by adding another `\`:
-```yaml
+```dircolors
 alert tcp any any <> any any (msg:"Keyword match"; content:"\\IPC$"; sid:1000001; rev:1;)
 ```
 
@@ -834,7 +834,7 @@ ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ sudo snort -r l
 
 To tackle this question we need to use the `dsize` option in our rule:
 
-```yaml
+```dircolors
 alert tcp any any <> any any  (msg: "Packet size between 770 and 855 bytes"; dsize: 770<>855; sid: 100000001; rev:1;)
 ```
 
