@@ -18,8 +18,8 @@ Simply click on the **Start Machine** button to launch the VM you will be using 
 For this task we are provided with two files inside the folder `TASK-2 (HTTP)`  
 
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files$ cd TASK-2\ \(HTTP\)/
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ ls
+ubuntu:~/Desktop/Exercise-Files$ cd TASK-2\ \(HTTP\)/
+ubuntu:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ ls
 local.rules  mx-3.pcap
 ```
 
@@ -45,16 +45,16 @@ Here we are creating an alert that gives us the log entry *"Port 80 detected"* w
 
 Save and exit the `local.rules` file and run Snort with the following command:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ sudo snort -r mx-3.pcap -c local.rules -l .
+ubuntu:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ sudo snort -r mx-3.pcap -c local.rules -l .
 ```
 
 Here is a breakdown of this command:
-- `sudo snort`:  Run snort as Root
+- `sudo snort`:  Run Snort as Root
 - `-r mx-3.pcap`: Load the given network capture file for analysis
 - `-c local.rules`: Use the rules found in the provided file
 - `-l .`: Output the results to  log file saved in this directory
 
-The answer to thsi question is found at the bottom of the command output under the `Action Stats:` heading:
+The answer to this question is found at the bottom of the command output under the `Action Stats:` heading:
 
 ```console
 ===============================================================================
@@ -62,10 +62,6 @@ Action Stats:
      Alerts:          [REDACTED] ( 35.652%)
      Logged:          [REDACTED] ( 35.652%)
      Passed:            0 (  0.000%)
-Limits:
-      Match:            0
-      Queue:            0
-        Log:            0
 ```
 
 
@@ -74,7 +70,7 @@ Limits:
 
 To answer this question we can look inside the log file we generated in Question 1 with the following command:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ sudo snort -r snort.log.1743326372 -A full -n 63
+ubuntu:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ sudo snort -r snort.log.1743326372 -A full -n 63
 ```
 
 This time we use `-A full` to specify the output format of the parsed logs and `-n 63` to only process the first 63 packets in the log file.  The answer to this question can be found in the entry for the last packet in the list:
@@ -93,7 +89,7 @@ TCP TTL:128 TOS:0x0 ID:3917 IpLen:20 DgmLen:761 DF
 
 To answer this question we can simply run the last command again with `-n 64`
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ sudo snort -r snort.log.1743326372 -A full -n 64
+ubuntu:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ sudo snort -r snort.log.1743326372 -A full -n 64
 ```
 
 Our answer is in the last packet entry in the output:
@@ -110,7 +106,7 @@ TCP TTL:128 TOS:0x0 ID:3917 IpLen:20 DgmLen:761 DF
 
 OK..so you know what to do by now...rinse and repeat:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ sudo snort -r snort.log.1743326372 -A full -n 62
+ubuntu:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ sudo snort -r snort.log.1743326372 -A full -n 62
 ```
 
 ```console
@@ -125,7 +121,7 @@ TCP TTL:128 TOS:0x0 ID:3917 IpLen:20 DgmLen:761 DF
 > What is the TTL of packet 65?
 
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ sudo snort -r snort.log.1743326372 -A full -n 65
+ubuntu:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ sudo snort -r snort.log.1743326372 -A full -n 65
 ```
 
 ```console
@@ -152,8 +148,8 @@ We can get this from the last packet entry for Question 5
 
 Now let's move to the folder for TASK 3 and have a look inside:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ cd ../TASK-3\ \(FTP\)/
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-3 (FTP)$ ls
+ubuntu:~/Desktop/Exercise-Files/TASK-2 (HTTP)$ cd ../TASK-3\ \(FTP\)/
+ubuntu:~/Desktop/Exercise-Files/TASK-3 (FTP)$ ls
 ftp-png-gif.pcap  local.rules
 ```
 
@@ -176,7 +172,7 @@ alert tcp any 21 <> any any (msg: "Port 21 Detected"; sid:100001; rev:1;)
 
 Now simply run snort on the given capture file with these rules:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap -l .
+ubuntu:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap -l .
 ```
 
 Our answer is found under the *Action Stats* heading of the output:
@@ -195,7 +191,7 @@ Action Stats:
 
 The easiest way to tackle this is to use the `strings` command with `grep` to look for *FTP* in the log file:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo strings snort.log.1743327826 | grep FTP
+ubuntu:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo strings snort.log.1743327826 | grep FTP
 }220 [REDACTED] FTP Service
 ~220 [REDACTED] FTP Service
 220 [REDACTED] FTP Service
@@ -227,7 +223,7 @@ alert tcp any any <> any any (msg:"Failed FTP login attempt";content:"530 User";
 
 Now we can run Snort using this updated rule file:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap
+ubuntu:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap
 ```
 
 The number of detected packets is near the end of the command output under the heading *Action Stats:*
@@ -262,7 +258,7 @@ alert tcp any any <> any any (msg:"Successful FTP login";content:"230 User";sid:
 
 and run Snort again:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap
+ubuntu:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap
 ```
 
 And the answer is once again at the bottom of the command output:
@@ -296,7 +292,7 @@ alert tcp any any <> any any (msg:"Valid FTP user but no password entered";conte
 
 Run Snort again with the updated rules file:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap
+ubuntu:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap
 ```
 
 And the answer is once again at the bottom of the command output:
@@ -331,7 +327,7 @@ alert tcp any any <> any any (msg:"Administrator FTP user but no password entere
 
 Run Snort again with the updated rules file:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap
+ubuntu:~/Desktop/Exercise-Files/TASK-3 (FTP)$ sudo snort -c local.rules -r ftp-png-gif.pcap
 ```
 
 And the answer is once again at the bottom of the command output:
@@ -348,8 +344,8 @@ Action Stats:
 
 Now let's move to the folder for TASK 4 and have a look inside:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-3 (FTP)$ cd ../TASK-4\ \(PNG\)/
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-4 (PNG)$ ls
+ubuntu:~/Desktop/Exercise-Files/TASK-3 (FTP)$ cd ../TASK-4\ \(PNG\)/
+ubuntu:~/Desktop/Exercise-Files/TASK-4 (PNG)$ ls
 ftp-png-gif.pcap  local.rules
 ```
 
@@ -380,12 +376,12 @@ Note that there already is an existing rule in the file so we need to increment 
 
 We can now run Snort with the updated rules file:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-4 (PNG)$ sudo snort -c local.rules -r ftp-png-gif.pcap -l .
+ubuntu:~/Desktop/Exercise-Files/TASK-4 (PNG)$ sudo snort -c local.rules -r ftp-png-gif.pcap -l .
 ```
 
 Similarly to what we did in Task 3, we can use the `strings` command to list human-readable strings in the log file and look out for the software name:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-4 (PNG)$ sudo strings snort.log.1743330590
+ubuntu:~/Desktop/Exercise-Files/TASK-4 (PNG)$ sudo strings snort.log.1743330590
 IHDR
 tEXtSoftware
 [REDACTED]
@@ -433,14 +429,14 @@ Note that the two file signatures are added as two seperate rules.  If we were t
 
 We can now delete the old log file and run Snort with the updated rules:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-4 (PNG)$ rm snort.log.1743330590 
+ubuntu:~/Desktop/Exercise-Files/TASK-4 (PNG)$ rm snort.log.1743330590 
 rm: remove write-protected regular file 'snort.log.1743330590'? y
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-4 (PNG)$ sudo snort -c local.rules -r ftp-png-gif.pcap -l .
+ubuntu:~/Desktop/Exercise-Files/TASK-4 (PNG)$ sudo snort -c local.rules -r ftp-png-gif.pcap -l .
 ```
 
 Once again we can use the `strings` command with the log file and we get our answer:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-4 (PNG)$ sudo strings snort.log.1743331085 
+ubuntu:~/Desktop/Exercise-Files/TASK-4 (PNG)$ sudo strings snort.log.1743331085 
 [REDACTED]
 [REDACTED]
 [REDACTED]
@@ -452,8 +448,8 @@ ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-4 (PNG)$ sudo strings snor
 
 Moving on to the folder for TASK 5:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-4 (PNG)$ cd ../TASK-5\ \(TorrentMetafile\)/
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-5 (TorrentMetafile)$ ls
+ubuntu:~/Desktop/Exercise-Files/TASK-4 (PNG)$ cd ../TASK-5\ \(TorrentMetafile\)/
+ubuntu:~/Desktop/Exercise-Files/TASK-5 (TorrentMetafile)$ ls
 local.rules  torrent.pcap
 ```
 
@@ -472,7 +468,7 @@ alert tcp any any <> any any (msg:"Torrent metafile detected"; content:".torrent
 
 You know the drill by now...
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-5 (TorrentMetafile)$ sudo snort -c local.rules -r torrent.pcap -l .
+ubuntu:~/Desktop/Exercise-Files/TASK-5 (TorrentMetafile)$ sudo snort -c local.rules -r torrent.pcap -l .
 ```
 
 and our answer is here:
@@ -492,7 +488,7 @@ Action Stats:
 We can answer this using `strings` with the log output generated for Question 1:
 
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-5 (TorrentMetafile)$ sudo strings snort.log.1743331468 
+ubuntu:~/Desktop/Exercise-Files/TASK-5 (TorrentMetafile)$ sudo strings snort.log.1743331468 
 GET /announce?info_hash=%01d%FE%7E%F1%10%5CWvAp%ED%F6%03%C49%D6B%14%F1&peer_id=%B8js%7F%E8%0C%AFh%02Y%967%24e%27V%EEM%16%5B&port=41730&uploaded=0&downloaded=0&left=3767869&compact=1&ip=127.0.0.1&event=started HTTP/1.1
 Accept: application/x-[REDACTED]
 Accept-Encoding: gzip
@@ -503,7 +499,7 @@ Connection: Keep-Alive
 
 Note - that we can get to the answer also by using the `-X` switch with Snort to look inside teh packet headers:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-5 (TorrentMetafile)$ sudo snort -r snort.log.1743331468 -X
+ubuntu:~/Desktop/Exercise-Files/TASK-5 (TorrentMetafile)$ sudo snort -r snort.log.1743331468 -X
 ```
 
 **Question 3**
@@ -522,7 +518,7 @@ This is also found in the output we got for Question 2.
 
 This time when we navigate to the task folder we see that we have 7 different rule files and a single pcap:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ ls
+ubuntu:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ ls
 local-1.rules  local-2.rules  local-3.rules  local-4.rules  local-5.rules  local-6.rules  local-7.rules  mx-1.pcap
 ```
 
@@ -538,7 +534,7 @@ The task description tels us that;
 
 Let's start by running the command we are given with `local-1.rules`:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ sudo snort -c local-1.rules -r mx-1.pcap -A console
+ubuntu:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ sudo snort -c local-1.rules -r mx-1.pcap -A console
 Running in IDS mode
 
         --== Initializing Snort ==--
@@ -570,7 +566,7 @@ alert tcp any 3372 -> any any (msg: "Troubleshooting 1"; sid:1000001; rev:1;)
 
 The debugging output of the console is very helpful here again:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ sudo snort -c local-2.rules -r mx-1.pcap -A console
+ubuntu:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ sudo snort -c local-2.rules -r mx-1.pcap -A console
 Running in IDS mode
 
         --== Initializing Snort ==--
@@ -599,7 +595,7 @@ alert icmp any any -> any any (msg: "Troubleshooting 2"; sid:1000001; rev:1;)
 
 This time we get the following error output:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ sudo snort -c local-3.rules -r mx-1.pcap -A console
+ubuntu:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ sudo snort -c local-3.rules -r mx-1.pcap -A console
 Running in IDS mode
 
         --== Initializing Snort ==--
@@ -628,7 +624,7 @@ alert tcp any any -> any 80,443 (msg: "HTTPX Packet Found"; sid:1000002; rev:1;)
 >What is the number of the detected packets?
 
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ sudo snort -c local-4.rules -r mx-1.pcap -A console
+ubuntu:~/Desktop/Exercise-Files/TASK-6 (Troubleshooting)$ sudo snort -c local-4.rules -r mx-1.pcap -A console
 Running in IDS mode
 
         --== Initializing Snort ==--
@@ -708,7 +704,7 @@ So the answer to this final question is _**msg**_
 
 The folder for this task contains two rules files and one pcap:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ ls
+ubuntu:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ ls
 local-1.rules  local.rules  ms-17-010.pcap
 ```
 
@@ -721,7 +717,7 @@ local-1.rules  local.rules  ms-17-010.pcap
 
 This should be easy by now - simply run snort with the provided rule file and pcap:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ sudo snort -c local.rules -r ms-17-010.pcap  -l .
+ubuntu:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ sudo snort -c local.rules -r ms-17-010.pcap  -l .
 ```
 
 **Question 2**
@@ -743,7 +739,7 @@ alert tcp any any <> any any (msg:"Keyword match"; content:"\\IPC$"; sid:1000001
 
 Let's have a look inside the matchign headers:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ sudo snort -r snort.log.1743334798 -X
+ubuntu:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ sudo snort -r snort.log.1743334798 -X
 ```
 ```console
 =+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
@@ -777,7 +773,7 @@ This can be answered with a simple Google search: [https://www.tenable.com/plugi
 
 Once again we are given two rules files and a pcap:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ ls
+ubuntu:~/Desktop/Exercise-Files/TASK-7 (MS17-10)$ ls
 local-1.rules  local.rules  ms-17-010.pcap
 ```
 
@@ -789,7 +785,7 @@ local-1.rules  local.rules  ms-17-010.pcap
 >What is the number of detected packets?
 
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ sudo snort -c local.rules -r log4j.pcap -l .
+ubuntu:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ sudo snort -c local.rules -r log4j.pcap -l .
 ```
 
 **Question 2**
@@ -799,7 +795,7 @@ ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ sudo snort -c l
 
 To answer this question we can have a look inside the `alerts` file which contains a log of each rule that was matched.  We can use `grep` to help filter the contents further:
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ cat alert | grep -F [**] | sort | uniq
+ubuntu:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ cat alert | grep -F [**] | sort | uniq
 [**] [1:21003726:1] FOX-SRT – Exploit – Possible Apache Log4J RCE Request Observed (CVE-2021-44228) [**]
 [**] [1:21003728:1] FOX-SRT – Exploit – Possible Apache Log4J RCE Request Observed (CVE-2021-44228) [**]
 [**] [1:21003730:1] FOX-SRT – Exploit – Possible Defense-Evasive Apache Log4J RCE Request Observed (CVE-2021-44228) [**]
@@ -815,7 +811,7 @@ This shows us that there were a total of 4 rules that matched and gives us their
 
 By simply running snort again we are given the sids at the very end of the output
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ sudo snort -r log4j.pcap -c local.rules 
+ubuntu:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ sudo snort -r log4j.pcap -c local.rules 
 ```
 ```console
 ===============================================================================
@@ -845,7 +841,7 @@ alert tcp any any <> any any  (msg: "Packet size between 770 and 855 bytes"; dsi
 
 We can browse through the packet header using the `-X` switch with snort.  Scrolling through the matched packets we see in the second-to-last packet that Base64 encoding was used.
 ```console
-ubuntu@ip-10-10-227-123:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ sudo snort -r snort.log.1743335983 -X
+ubuntu:~/Desktop/Exercise-Files/TASK-8 (Log4j)$ sudo snort -r snort.log.1743335983 -X
 ```
 
 **Question 6**
