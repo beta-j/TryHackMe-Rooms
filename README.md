@@ -7,4 +7,5 @@ Walkthroughs for various room on TryHackMe
 
 
 ### Snort Practice Rooms ###
-1. [Snort Challenge - The Basics](Snort%20Challenge%20-%20The%20Basics.md) - *Crafting, troubleshooting and analysing Snort IDS rules
+1. [Snort Challenge - The Basics](Snort%20Challenge%20-%20The%20Basics.md) - *Crafting, troubleshooting and analysing Snort IDS rules*
+2. [Snort Challenge - Live Attacks](Snort%20Challenge%20-%20Live%20Attacks.md) - *Analysing network captures with Snort and crafting IDS rules to counteract live attacks*
